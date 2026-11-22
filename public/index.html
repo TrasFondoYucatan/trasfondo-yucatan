@@ -1155,6 +1155,9 @@ html.mm-lock{overflow:hidden}
 .sowp:hover .sowp-logo,.sowp:focus-visible .sowp-logo{transform:translateY(-2px) scale(1.06)}
 
 /* ===== nota en celular: ligera ===== */
+.mdl.lite .mdl-bg{background:#fff!important}
+.mdl.lite .mdl-bg>*{display:none!important}
+
 .mdl.lite .rv,.mdl.lite .sh{animation:none!important;opacity:1!important;transform:none!important}
 .mdl.lite .mdl-bg,.mdl.lite .mdl-bg *{transition:none!important}
 
@@ -4351,7 +4354,7 @@ function openModal(a, pushed){
   ri = 0;
   el.innerHTML = `<div class="mdl-bg"><i class="b1"></i><i class="b2"></i><i class="b3"></i><i class="b4"></i><i class="ph"></i><i class="bgi"></i><i class="tx"></i><i class="tx"></i><i class="gr"></i></div><div class="mdl-ico" aria-hidden="true"><span></span></div><div class="clips"><div class="clips-h">Lo importante <b>0</b></div><div class="clips-list"></div><button type="button" class="clip-pill">Lo importante <b>0</b></button></div><div class="mdl-prog"><i></i></div><div class="mdl-scroll"><article class="mdl-panel art" tabindex="-1">${mdlHTML(a)}</article></div>`;
   const lite = LITE();
-  if(lite){ el.classList.add('lite'); applyPal(el, catPal(a.c)); setTexture(el); el.querySelectorAll('.mdl-panel .rv, .mdl-panel .sh').forEach(x => x.classList.add('vis')); }
+  if(lite){ el.classList.add('lite'); applyPal(el, catPal(a.c)); el.querySelectorAll('.mdl-panel .rv, .mdl-panel .sh').forEach(x => x.classList.add('vis')); }
   else { setMdlBg(el, a); setTexture(el); setBgImage(el, a); }
   const sw = innerWidth - document.documentElement.clientWidth;
   document.documentElement.classList.add('mdl-lock');
@@ -4372,18 +4375,15 @@ function openModal(a, pushed){
   reveal(el); countShown(el);
   animateOpen(el);
   if(S.cfg.site.kp) clipsStart(el);
-  if(lite){
-    /* lo pesado (colores de la foto, fondo animado) se hace cuando ya terminó la animación */
-    setTimeout(() => { if(mdl.el === el && el.isConnected){ setMdlBg(el, a); setBgImage(el, a); } }, 520);
-  } else inkStart(el, a, .7);
+  /* en celular no hay fondo decorativo: la nota ocupa toda la pantalla y así no se traba */
+  if(!lite) inkStart(el, a, .7);
   el.querySelector('.mdl-panel').focus({preventScroll:true});
 }
 function animateOpen(el){
   const from = flightFrom; flightFrom = null;
   if(CALM) return;
   if(el.classList.contains('lite')){
-    el.querySelector('.mdl-bg').animate([{opacity:0}, {opacity:1}], {duration:260, easing:'ease-out'});
-    el.querySelector('.mdl-scroll').animate([{opacity:0, transform:'translate3d(0,48px,0)'}, {opacity:1, transform:'translate3d(0,0,0)'}], {duration:360, easing:E_OUT});
+    el.animate([{opacity:0, transform:'translate3d(0,40px,0)'}, {opacity:1, transform:'translate3d(0,0,0)'}], {duration:320, easing:E_OUT});
     return;
   }
   const bg = el.querySelector('.mdl-bg'), panel = el.querySelector('.mdl-panel'), hero = el.querySelector('.mdl-hero');
@@ -4414,15 +4414,9 @@ function swapModal(a){
   mdl.id = a.id;
   const fill = () => {
     if(FX.on && FX.el === el) FX.park();
-    ri = 0; panel.innerHTML = mdlHTML(a); sc.scrollTop = 0; setTexture(el);
-    if(lite){
-      /* celular: sin animaciones encadenadas; los colores de la foto se aplican después */
-      panel.querySelectorAll('.rv, .sh').forEach(x => x.classList.add('vis'));
-      setTimeout(() => { if(mdl.el === el && mdl.id === a.id){ setMdlBg(el, a); setBgImage(el, a); } }, 380);
-    } else {
-      setMdlBg(el, a); setBgImage(el, a);
-      reveal(panel); inkStart(el, a, .15);
-    }
+    ri = 0; panel.innerHTML = mdlHTML(a); sc.scrollTop = 0;
+    if(lite){ applyPal(el, catPal(a.c)); panel.querySelectorAll('.rv, .sh').forEach(x => x.classList.add('vis')); }
+    else { setTexture(el); setMdlBg(el, a); setBgImage(el, a); reveal(panel); inkStart(el, a, .15); }
     countShown(panel);
     if(S.cfg.site.kp) clipsStart(el);
     if(!CALM) panel.animate([{opacity:0, transform:'translate3d(0,' + (lite ? 14 : 22) + 'px,0)'}, {opacity:1, transform:'translate3d(0,0,0)'}], {duration:lite ? 260 : 520, easing:E_OUT});
@@ -4448,6 +4442,10 @@ function closeModal(instant){
   };
   if(instant || CALM) return fin();
   el.style.pointerEvents = 'none';
+  if(el.classList.contains('lite')){
+    el.animate([{opacity:1, transform:'translate3d(0,0,0)'}, {opacity:0, transform:'translate3d(0,24px,0)'}], {duration:200, easing:'ease-in', fill:'forwards'}).onfinish = fin;
+    return;
+  }
   ['.mdl-ico', '.clips'].forEach(q => { const x = el.querySelector(q); if(x) x.animate([{opacity:1}, {opacity:0}], {duration:240, fill:'forwards'}); });
   el.querySelector('.mdl-bg').animate([{opacity:1}, {opacity:0}], {duration:360, easing:'ease', fill:'forwards'});
   el.querySelector('.mdl-panel').animate([{opacity:1, transform:'none'}, {opacity:0, transform:'translateY(40px) scale(.965)'}], {duration:320, easing:'cubic-bezier(.4,0,1,1)', fill:'forwards'}).onfinish = fin;
