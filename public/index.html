@@ -1248,7 +1248,7 @@ const SEED = [
 ];
 const defaults = () => ({
   cfg:{
-    tag:'Detrás de cada nota\nhay un trasfondo', city:'Mérida, Yucatán', date:'Lunes, 27 de enero de 2025', temp:'28 °C', wx:'Parcialmente nublado',
+    tag:'Detrás de cada nota\nhay un trasfondo', city:'Mérida, Yucatán', date:'', temp:'28 °C', wx:'Parcialmente nublado',
     cats:{merida:'Mérida',yucatan:'Yucatán',politica:'Política',seguridad:'Seguridad',nacional:'Nacional',deportes:'Deportes',entretenimiento:'Entretenimiento',opinion:'Opinión'},
     sec:{latest:'Últimas noticias',opinion:'Opinión',portada:'En portada',mas:'Más de Yucatán'},
     banner:{a:'DESCUBRE',b:'YUCATÁN',text:'Cultura, historia,\nnaturaleza y más',btn:'Conoce más',link:'yucatan',img:''},
@@ -1284,6 +1284,7 @@ function upgradeState(st){
   const walk = o => { for(const k in o){ if(o[k] && typeof o[k] === 'object') walk(o[k]); else o[k] = fix(o[k]); } };
   walk(c);
   st.arts.forEach(a => ['t', 'l', 'body', 'seoT', 'seoD', 'au', 'alt'].forEach(k => { if(typeof a[k] === 'string') a[k] = fix(a[k]); }));
+  if(c.date === 'Lunes, 27 de enero de 2025') c.date = '';
   if(c.foot2 === '© 2025 Todos los derechos reservados') c.foot2 = '© ' + new Date().getFullYear() + ' Todos los derechos reservados';
   const a1 = st.arts.find(a => a.id === 1 && a.demo !== false);
   if(a1 && a1.body === BODY.merida.join('\n\n')) a1.body = SHOW1;
