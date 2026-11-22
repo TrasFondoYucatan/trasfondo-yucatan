@@ -4374,7 +4374,7 @@ function openModal(a, pushed){
   sc.addEventListener('scroll', () => el.classList.toggle('scrolled', sc.scrollTop > 50), {passive:true});
   reveal(el); countShown(el);
   animateOpen(el);
-  if(S.cfg.site.kp) clipsStart(el);
+  if(!el.classList.contains('lite')) clipsStart(el);
   /* en celular no hay fondo decorativo: la nota ocupa toda la pantalla y así no se traba */
   if(!lite) inkStart(el, a, .7);
   el.querySelector('.mdl-panel').focus({preventScroll:true});
@@ -4418,7 +4418,7 @@ function swapModal(a){
     if(lite){ applyPal(el, catPal(a.c)); panel.querySelectorAll('.rv, .sh').forEach(x => x.classList.add('vis')); }
     else { setTexture(el); setMdlBg(el, a); setBgImage(el, a); reveal(panel); inkStart(el, a, .15); }
     countShown(panel);
-    if(S.cfg.site.kp) clipsStart(el);
+    if(!el.classList.contains('lite')) clipsStart(el);
     if(!CALM) panel.animate([{opacity:0, transform:'translate3d(0,' + (lite ? 14 : 22) + 'px,0)'}, {opacity:1, transform:'translate3d(0,0,0)'}], {duration:lite ? 260 : 520, easing:E_OUT});
     const i = el.querySelector('.mdl-prog i'); if(i) i.style.transform = 'scaleX(0)';
     panel.focus({preventScroll:true});
