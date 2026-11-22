@@ -1328,7 +1328,7 @@ const defaults = () => ({
     social:{text:'SÍGUENOS\nEN NUESTRAS\nREDES SOCIALES',fb:'',ig:'',tk:'',x:'',yt:''},
     foot1:'Informamos - Conectamos - Transformamos', foot2:'© ' + new Date().getFullYear() + ' Todos los derechos reservados',
     seoTitle:'Trasfondo Yucatán · Noticias de Mérida y Yucatán', seoDesc:'Noticias de Mérida y Yucatán: seguridad, política, deportes y entretenimiento. Detrás de cada nota hay un trasfondo.',
-    site:{url:'', name:'Trasfondo Yucatán', ogImg:'', tw:'', ga:'', gsc:'', ai:'', cpm:'120', live:false, kp:false}
+    site:{url:'', name:'Trasfondo Yucatán', ogImg:'', tw:'', ga:'', gsc:'', ai:'', cpm:'120', live:false, kp:false, sowpAd:false}
   },
   stats:{views:{},clicks:{},daily:{},imp:{},time:{},reads:{},adimp:{},adclk:{}},
   slots:{hero:1,side:[2,3],latest:[4,5,6,7],portada:[8,9,10,11],mas:[12,13,14,15],opinion:[16,17]},
@@ -1359,6 +1359,14 @@ function upgradeState(st){
   st.arts.forEach(a => ['t', 'l', 'body', 'seoT', 'seoD', 'au', 'alt'].forEach(k => { if(typeof a[k] === 'string') a[k] = fix(a[k]); }));
   if(c.date === 'Lunes, 27 de enero de 2025') c.date = '';
   if(c.foot2 === '© 2025 Todos los derechos reservados') c.foot2 = '© ' + new Date().getFullYear() + ' Todos los derechos reservados';
+  /* banner de SOWP en la barra lateral (una sola vez; si luego lo borran, no regresa) */
+  if(!c.site.sowpAd && Array.isArray(st.ads)){
+    const SOWP = {name:'SOWP', place:'side', on:true, demo:false, tag:'Anuncio', title:'Creamos tu página web o app móvil', text:'Sitios web y apps móviles para tu negocio.', btn:'Conoce más', link:'https://wa.me/525519313707', img:'/banner-sowp.jpg', secs:[]};
+    const ex = st.ads.find(x => /crea(mos)? tu p[aá]gina|sowp/i.test((x.title || '') + ' ' + (x.name || '')));
+    if(ex) Object.assign(ex, {name:'SOWP', title:SOWP.title, text:SOWP.text, img:SOWP.img, on:true, demo:false, link:ex.link || SOWP.link});
+    else st.ads.push({id:st.nextAd++, ...SOWP});
+    c.site.sowpAd = true;
+  }
   const a1 = st.arts.find(a => a.id === 1 && a.demo !== false);
   if(a1 && a1.body === BODY.merida.join('\n\n')) a1.body = SHOW1;
   return st;
