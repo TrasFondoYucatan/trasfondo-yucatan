@@ -1,0 +1,4 @@
+/sitemap.xml    /.netlify/functions/api?r=sitemap    200
+/robots.txt     /.netlify/functions/api?r=robots     200
+/rss.xml        /.netlify/functions/api?r=rss        200
+/*              /index.html                          200

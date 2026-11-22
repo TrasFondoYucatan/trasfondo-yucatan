@@ -1,0 +1,72 @@
+TRASFONDO YUCATÁN · CÓMO PUBLICARLO EN NETLIFY
+================================================
+
+Este paquete trae la página y una función de servidor que guarda en Netlify
+todo lo que se edita en el administrador (notas, imágenes, banners, textos)
+y la contraseña. Así los cambios se ven para todos los visitantes.
+
+IMPORTANTE: la función de servidor solo se activa si Netlify "construye"
+el proyecto. Arrastrar el ZIP a Netlify Drop puede publicar solo la página.
+
+OPCIÓN RECOMENDADA · GitHub
+1. Sube el contenido de este ZIP a un repositorio de GitHub (puede ser privado).
+2. En Netlify: Add new project > Import an existing project > GitHub > elige el repositorio.
+3. Deja los valores que Netlify detecta (lee netlify.toml) y pulsa Deploy.
+4. Cada cambio que subas al repositorio se publica solo.
+
+OPCIÓN 2 · Netlify CLI (desde la computadora)
+1. Instala Node.js y luego:  npm install -g netlify-cli
+2. En esta carpeta:  netlify login   y después   netlify deploy --prod
+3. La primera vez te pregunta si crear un sitio nuevo: di que sí.
+
+OPCIÓN 3 · Arrastrar el ZIP (rápido, pero puede quedar sin servidor)
+1. Inicia sesión en Netlify y arrastra el ZIP en app.netlify.com/drop
+2. Entra a /admin > Acceso. Si dice "Conectado al servidor de Netlify", quedó todo.
+   Si dice "Modo local", usa la opción 1 o 2.
+
+ADMINISTRADOR
+- Dirección:  https://TU-SITIO.netlify.app/admin
+- Contraseña inicial:  TrasFondo2026
+- Cámbiala en Administrador > Acceso apenas entres. Al cambiarla se cierran
+  las sesiones abiertas en otros equipos.
+- Opcional: en Netlify > Project configuration > Environment variables puedes
+  crear ADMIN_PASSWORD para usar otra contraseña inicial.
+
+INTELIGENCIA ARTIFICIAL (gratis con Google Gemini)
+El asistente y el Generador de notas del administrador pueden redactar con IA.
+Sin IA siguen funcionando con reglas y plantillas propias.
+1. Entra a https://aistudio.google.com/apikey con una cuenta de Google
+   y pulsa "Create API key". Copia la clave.
+2. Netlify > tu sitio > Site configuration > Environment variables >
+   Add a variable. Nombre: GEMINI_API_KEY   Valor: la clave.
+3. Netlify > Deploys > Trigger deploy > Deploy site.
+4. Administrador > IA: debe decir "IA conectada · Google Gemini".
+- Plan gratuito: tiene un límite diario de uso. Si se alcanza, el sitio usa
+  las plantillas propias hasta que se renueve.
+- En el plan gratuito, Google puede usar lo que se envía para mejorar sus
+  productos. Solo se envían los datos de la nota y estadísticas del sitio.
+- Opcional: GEMINI_MODEL para elegir otro modelo (por defecto usa el
+  Flash más reciente).
+
+MODO DEMOSTRACIÓN (cómo arranca el sitio)
+- El sitio arranca en "modo demostración": se ve completo, con las noticias y
+  banners de ejemplo, para cualquiera que tenga el enlace.
+- En este modo Google NO lo indexa: cada página lleva "noindex", robots.txt
+  bloquea todo y el sitemap va vacío. No necesitas el plan de pago de Netlify.
+- Lo puedes enseñar al cliente con total tranquilidad.
+
+CUANDO SE ENTREGUE (publicarlo en Google)
+1. Administrador > SEO y publicación: escribe la dirección real del sitio.
+2. Crea al menos una nota real (Noticias > Nueva nota, o el Generador de IA).
+3. En la tarjeta "Modo demostración" pulsa "Quitar contenido de ejemplo"
+   (pide confirmar dos veces y solo borra las notas y banners de muestra).
+4. Activa el interruptor "Visible para Google".
+5. Google Search Console: agrega el sitio, verifícalo y envía /sitemap.xml.
+   Para verificar con "Archivo HTML", pon el googleXXXX.html que te da Google
+   dentro de public/ y vuelve a publicar.
+- /sitemap.xml, /robots.txt y /rss.xml se generan solos con todas las notas.
+- Si quieres volver a demostración, apaga "Visible para Google".
+
+LÍMITES
+- Imágenes y videos subidos: hasta 5 MB cada uno. Para videos largos usa YouTube.
+- Si dos personas editan al mismo tiempo, gana el último que guarda.
