@@ -1155,6 +1155,9 @@ html.mm-lock{overflow:hidden}
 .sowp:hover .sowp-logo,.sowp:focus-visible .sowp-logo{transform:translateY(-2px) scale(1.06)}
 
 /* ===== nota en celular: ligera ===== */
+.mdl.lite .rv,.mdl.lite .sh{animation:none!important;opacity:1!important;transform:none!important}
+.mdl.lite .mdl-bg,.mdl.lite .mdl-bg *{transition:none!important}
+
 .mdl.lite .mdl-ico{display:none}
 .mdl.lite .mdl-scroll{will-change:transform,opacity}
 .mdl.lite .mdl-x{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(10,17,99,.88)}
@@ -1361,9 +1364,9 @@ function upgradeState(st){
   if(c.foot2 === '© 2025 Todos los derechos reservados') c.foot2 = '© ' + new Date().getFullYear() + ' Todos los derechos reservados';
   /* banner de SOWP en la barra lateral (una sola vez; si luego lo borran, no regresa) */
   if(!c.site.sowpAd && Array.isArray(st.ads)){
-    const SOWP = {name:'SOWP', place:'side', on:true, demo:false, tag:'Anuncio', title:'Creamos tu página web o app móvil', text:'Sitios web y apps móviles para tu negocio.', btn:'Conoce más', link:'https://wa.me/525519313707', img:'/banner-sowp.jpg', secs:[]};
+    const SOWP = {name:'SOWP', place:'side', on:true, demo:false, tag:'Anuncio', title:'Creamos tu página web o app móvil', text:'Sitios web y apps móviles para tu negocio.', btn:'Conoce más', link:'https://wa.me/525519313707?text=' + encodeURIComponent('Hola SOWP, vi su anuncio en Trasfondo Yucatán y quiero cotizar una página web o app.'), img:'/banner-sowp.jpg', secs:[]};
     const ex = st.ads.find(x => /crea(mos)? tu p[aá]gina|sowp/i.test((x.title || '') + ' ' + (x.name || '')));
-    if(ex) Object.assign(ex, {name:'SOWP', title:SOWP.title, text:SOWP.text, img:SOWP.img, on:true, demo:false, link:ex.link || SOWP.link});
+    if(ex) Object.assign(ex, {name:'SOWP', title:SOWP.title, text:SOWP.text, img:SOWP.img, on:true, demo:false, link:SOWP.link});
     else st.ads.push({id:st.nextAd++, ...SOWP});
     c.site.sowpAd = true;
   }
@@ -4348,7 +4351,7 @@ function openModal(a, pushed){
   ri = 0;
   el.innerHTML = `<div class="mdl-bg"><i class="b1"></i><i class="b2"></i><i class="b3"></i><i class="b4"></i><i class="ph"></i><i class="bgi"></i><i class="tx"></i><i class="tx"></i><i class="gr"></i></div><div class="mdl-ico" aria-hidden="true"><span></span></div><div class="clips"><div class="clips-h">Lo importante <b>0</b></div><div class="clips-list"></div><button type="button" class="clip-pill">Lo importante <b>0</b></button></div><div class="mdl-prog"><i></i></div><div class="mdl-scroll"><article class="mdl-panel art" tabindex="-1">${mdlHTML(a)}</article></div>`;
   const lite = LITE();
-  if(lite){ el.classList.add('lite'); applyPal(el, catPal(a.c)); setTexture(el); }
+  if(lite){ el.classList.add('lite'); applyPal(el, catPal(a.c)); setTexture(el); el.querySelectorAll('.mdl-panel .rv, .mdl-panel .sh').forEach(x => x.classList.add('vis')); }
   else { setMdlBg(el, a); setTexture(el); setBgImage(el, a); }
   const sw = innerWidth - document.documentElement.clientWidth;
   document.documentElement.classList.add('mdl-lock');
@@ -4407,23 +4410,27 @@ function flight(from, hero, to){
   };
 }
 function swapModal(a){
-  const el = mdl.el, panel = el.querySelector('.mdl-panel'), sc = el.querySelector('.mdl-scroll');
+  const el = mdl.el, panel = el.querySelector('.mdl-panel'), sc = el.querySelector('.mdl-scroll'), lite = el.classList.contains('lite');
   mdl.id = a.id;
   const fill = () => {
     if(FX.on && FX.el === el) FX.park();
-    ri = 0; panel.innerHTML = mdlHTML(a); setMdlBg(el, a); setTexture(el); setBgImage(el, a); sc.scrollTop = 0;
-    reveal(panel); countShown(panel);
-    if(S.cfg.site.kp) clipsStart(el);
-    if(!el.classList.contains('lite')) inkStart(el, a, .15);
-    if(!CALM){
-      panel.animate([{opacity:0, transform:'translateY(22px)'}, {opacity:1, transform:'none'}], {duration:560, easing:E_OUT});
-      el.querySelector('.mdl-bg').animate([{opacity:.6}, {opacity:1}], {duration:600, easing:'ease-out'});
+    ri = 0; panel.innerHTML = mdlHTML(a); sc.scrollTop = 0; setTexture(el);
+    if(lite){
+      /* celular: sin animaciones encadenadas; los colores de la foto se aplican después */
+      panel.querySelectorAll('.rv, .sh').forEach(x => x.classList.add('vis'));
+      setTimeout(() => { if(mdl.el === el && mdl.id === a.id){ setMdlBg(el, a); setBgImage(el, a); } }, 380);
+    } else {
+      setMdlBg(el, a); setBgImage(el, a);
+      reveal(panel); inkStart(el, a, .15);
     }
+    countShown(panel);
+    if(S.cfg.site.kp) clipsStart(el);
+    if(!CALM) panel.animate([{opacity:0, transform:'translate3d(0,' + (lite ? 14 : 22) + 'px,0)'}, {opacity:1, transform:'translate3d(0,0,0)'}], {duration:lite ? 260 : 520, easing:E_OUT});
     const i = el.querySelector('.mdl-prog i'); if(i) i.style.transform = 'scaleX(0)';
     panel.focus({preventScroll:true});
   };
   if(CALM) return fill();
-  const out = panel.animate([{opacity:1, transform:'none'}, {opacity:0, transform:'translateY(-12px)'}], {duration:200, easing:'ease-in', fill:'forwards'});
+  const out = panel.animate([{opacity:1}, {opacity:0}], {duration:lite ? 110 : 180, easing:'ease-in', fill:'forwards'});
   out.onfinish = () => { out.cancel(); fill(); };
 }
 function closeModal(instant){
