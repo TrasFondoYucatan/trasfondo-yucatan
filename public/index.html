@@ -1205,6 +1205,42 @@ html.mm-lock{overflow:hidden}
 
 .rb-emb.warn{border-left-color:#e0a100;background:#fff8e6}.rb-emb.warn .rb-u{white-space:normal;color:#7a5600;font-size:12.5px}
 
+/* ===== banners: varios por lugar y tamaño a elegir ===== */
+.adset{display:flex;flex-direction:column;gap:16px}
+.adset-strip{margin:18px 0 0}
+.adset-strip .adx-strip{margin:0}
+.adset-inline .adx-inline{margin:6px 0 24px}
+.adset-side .adx{flex:none!important;width:100%}
+.adx.has-img .adx-img{width:100%;height:auto;object-fit:contain;margin:0 auto}
+.adx-side.sz-chico:not(.has-img){padding:30px 20px 18px;gap:10px}
+.adx-side.sz-chico:not(.has-img) .adx-d{display:none}
+.adx-side.sz-chico:not(.has-img){min-height:160px!important;max-height:none!important}
+.adx-side.sz-chico.has-img .adx-img{max-height:160px}
+.adx-side.sz-mediano:not(.has-img){min-height:260px!important;max-height:none!important}
+.adx-side.sz-mediano.has-img .adx-img{max-height:260px}
+.adx-side.sz-grande:not(.has-img){min-height:420px!important;max-height:none!important}
+.adx-side.sz-grande.has-img .adx-img{max-height:420px}
+.adx-strip.sz-chico:not(.has-img){min-height:100px!important;max-height:none!important}
+.adx-strip.sz-chico.has-img .adx-img{max-height:100px}
+.adx-strip.sz-mediano:not(.has-img){min-height:160px!important;max-height:none!important}
+.adx-strip.sz-mediano.has-img .adx-img{max-height:160px}
+.adx-strip.sz-grande:not(.has-img){min-height:260px!important;max-height:none!important}
+.adx-strip.sz-grande.has-img .adx-img{max-height:260px}
+.adx-inline.sz-chico:not(.has-img){min-height:120px!important;max-height:none!important}
+.adx-inline.sz-chico.has-img .adx-img{max-height:120px}
+.adx-inline.sz-mediano:not(.has-img){min-height:190px!important;max-height:none!important}
+.adx-inline.sz-mediano.has-img .adx-img{max-height:190px}
+.adx-inline.sz-grande:not(.has-img){min-height:300px!important;max-height:none!important}
+.adx-inline.sz-grande.has-img .adx-img{max-height:300px}
+/* selector de tamaño */
+.szpick{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.szpick label{display:grid;gap:2px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;cursor:pointer;transition:border-color .2s,background .2s,transform .25s var(--e-spring)}
+.szpick label:hover{border-color:#c9cde6;transform:translateY(-1px)}
+.szpick label.on{border-color:var(--red);background:#fff4f4}
+.szpick input{position:absolute;opacity:0;pointer-events:none}
+.szpick b{color:var(--navy);font-size:15px}.szpick small{color:var(--muted);font-size:12px}
+@media (max-width:640px){.szpick{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -1775,7 +1811,10 @@ function socialOf(u){
     /* los enlaces de "Compartir" (facebook.com/share/…) no se pueden insertar: se muestran como tarjeta */
     if(/facebook\.com\/share\//i.test(u) || /fb\.watch/i.test(u)) return {net:'fb', card:1};
     u = cleanFb(u);
-    const vid = /\/videos\/|\/reel\/|\/watch/i.test(u);
+    /* los reels se insertan como video vertical (Facebook no acepta la dirección /reel/ directa) */
+    const rl = u.match(/\/reels?\/(\d+)/i);
+    if(rl) return {net:'fb', src:`https://www.facebook.com/plugins/video.php?href=${encodeURIComponent('https://www.facebook.com/watch/?v=' + rl[1])}&show_text=false&width=320&height=568`, h:568, w:320};
+    const vid = /\/videos\/|\/watch/i.test(u);
     return {net:'fb', src:`https://www.facebook.com/plugins/${vid ? 'video' : 'post'}.php?href=${encodeURIComponent(u)}&show_text=true&width=500`, h:vid ? 420 : 640, w:500};
   }
   if((m = u.match(/instagram\.com\/(?:[\w.]+\/)?(p|reel|tv)\/([\w-]+)/i))) return {net:'ig', src:`https://www.instagram.com/${m[1].toLowerCase() === 'tv' ? 'p' : m[1].toLowerCase()}/${m[2]}/embed/captioned/`, h:720, w:500};
@@ -2050,13 +2089,14 @@ function vCat(k){
   const head = `<div class="ch rv" ${R()}><h1>${esc(catN(k))}</h1><p>${items.length} ${items.length === 1 ? 'nota' : 'notas'}</p></div>`;
   const empty = '<div class="empty">Aún no hay notas en esta sección.</div>';
   if(k === 'opinion')
-    return `<div class="grid"><div>${head}${items.length ? `<div class="opgrid">${items.map(opCard).join('')}</div>` : empty}</div><div class="col-r">${latestBox()}${adBlock('side', k)}${socialCard()}</div></div>`;
+    return `<div class="grid"><div>${head}${adBlock('strip', k)}${items.length ? `<div class="opgrid">${items.map(opCard).join('')}</div>` : empty}</div><div class="col-r">${latestBox()}${adBlock('side', k)}${socialCard()}</div></div>`;
   const right = `<div class="col-r">${latestBox()}${opBox(S.slots.opinion)}${adBlock('side', k)}</div>`;
-  if(!items.length) return `<div class="grid"><div>${head}${empty}</div>${right}</div>`;
+  if(!items.length) return `<div class="grid"><div>${head}${adBlock('strip', k)}${empty}</div>${right}</div>`;
   const [h, s1, s2, ...rest] = items;
   const sides = [s1, s2].filter(Boolean);
   return `<div class="grid"><div>${head}
     <div class="hg ${sides.length < 2 ? 'solo' : ''}">${heroCard(h)}${sides.map(sideCard).join('')}</div>
+    ${adBlock('strip', k)}
     ${banner()}
     ${rest.length ? sh('Más en ' + catN(k)) + `<div class="row4" style="grid-template-columns:repeat(3,1fr)">${rest.map(portadaCard).join('')}</div>` : ''}
   </div>${right}</div>`;
@@ -2077,6 +2117,7 @@ function vArt(id){
     ${media ? `<div class="rv" ${R()}>${media}</div>` : ''}
     ${pp.length ? `<div class="txt rv" ${R()}>${pp.join('')}</div>` : ''}
     <div class="share rv" ${R()} data-sid="${a.id}">Compartir:<button type="button" data-share="copy">Copiar enlace</button><button type="button" data-share="wa">WhatsApp</button><button type="button" data-share="fb">Facebook</button><button type="button" data-share="x">X</button></div>
+ ${adBlock('strip', a.c)}
     ${sh('Te puede interesar')}<div class="row4" style="grid-template-columns:repeat(3,1fr)">${rel.map(portadaCard).join('')}</div>
   </article><div class="col-r">${latestBox()}${adBlock('side', a.c)}${socialCard()}</div></div>`;
 }
@@ -2708,7 +2749,8 @@ adBody.addEventListener('input', e => {
   else if(d.adf){
     const x = byAd(ad.aid); if(!x) return;
     x[d.adf] = t.type === 'checkbox' ? t.checked : t.value;
-    renderAdList(); updateAdPrev(); saveSoon();
+    renderAdList(); saveSoon();
+    if(d.adf === 'place' || d.adf === 'size') renderAdEditor(); else updateAdPrev();
   }
   else if(d.adsec !== undefined){
     const x = byAd(ad.aid); if(!x) return;
@@ -3136,9 +3178,9 @@ function tplSeoSite(){
    ========================================================= */
 const PLACES = {side:'Barra lateral', inline:'Dentro de la nota', strip:'Franja horizontal'};
 const PLACE_HINT = {
-  side:'Va en el espacio libre de la columna derecha: bajo Opinión en el inicio y bajo Últimas noticias en secciones y notas. Imagen sugerida: 600 × 500 px.',
-  inline:'Aparece a la mitad de cada nota, cuando la persona ya lleva leyendo. Imagen sugerida: 1200 × 300 px.',
-  strip:'Franja ancha entre los bloques de la página de inicio. Imagen sugerida: 1200 × 200 px.'
+  side:'Va en el espacio libre de la columna derecha: bajo Opinión en el inicio y bajo Últimas noticias en secciones y notas.',
+  inline:'Aparece a la mitad de cada nota, cuando la persona ya lleva leyendo.',
+  strip:'Franja ancha: en el inicio, arriba de cada sección y al final de cada nota.'
 };
 const ADS0 = () => [
   {id:1, name:'Restaurante La Ceiba (ejemplo)', place:'side', on:true, demo:true, tag:'Gastronomía', title:'Cochinita pibil como en casa', text:'Reserva tu mesa este fin de semana y prueba el menú de temporada.', btn:'Reservar', link:'', img:'', secs:[]},
@@ -3146,11 +3188,21 @@ const ADS0 = () => [
   {id:3, name:'Hotel Hacienda del Sur (ejemplo)', place:'strip', on:false, demo:true, tag:'Turismo', title:'Fin de semana en hacienda', text:'Desayuno incluido, alberca y 15% de descuento con reserva directa.', btn:'Ver oferta', link:'', img:'', secs:[]}
 ];
 const adsFor = (place, key) => S.ads.filter(x => x.on && x.place === place && (!x.secs.length || x.secs.includes(key)));
+/* cuántos banners caben a la vez en cada lugar (si hay más, se turnan) */
+const AD_CAP = {side:3, strip:2, inline:1};
+/* tamaños: alto en pantalla y medida recomendada de la imagen */
+const AD_SZ = {
+  side:{chico:{h:160, img:'600 × 320'}, mediano:{h:260, img:'600 × 520'}, grande:{h:420, img:'600 × 840'}},
+  strip:{chico:{h:100, img:'1200 × 100'}, mediano:{h:160, img:'1200 × 160'}, grande:{h:260, img:'1200 × 260'}},
+  inline:{chico:{h:120, img:'1200 × 200'}, mediano:{h:190, img:'1200 × 320'}, grande:{h:300, img:'1200 × 520'}}
+};
+const adSz = x => AD_SZ[x.place] && AD_SZ[x.place][x.size] ? x.size : 'mediano';
 const adRot = {};
 function adBlock(place, key){
   const l = adsFor(place, key); if(!l.length) return '';
-  adRot[place] = (adRot[place] || 0) + 1;
-  return adHTML(l[(adRot[place] - 1) % l.length]);
+  const cap = Math.min(AD_CAP[place] || 1, l.length), st = adRot[place] = (adRot[place] || 0) + 1;
+  const pick = []; for(let i = 0; i < cap; i++) pick.push(l[(st - 1 + i) % l.length]);
+  return `<div class="adset adset-${place}">${pick.map(x => adHTML(x)).join('')}</div>`;
 }
 function adHTML(x, preview){
   const link = safeUrl(x.link), tag = preview ? 'div' : 'a';
@@ -3159,7 +3211,7 @@ function adHTML(x, preview){
   const txt = `<span class="adx-c"><span class="adx-k">${esc(x.tag || 'Anuncio')}</span><b class="adx-t">${esc(x.title)}</b><p class="adx-d">${esc(x.text)}</p></span><span class="adx-b">${esc(x.btn || 'Conoce más')} ›</span>`;
   /* si la imagen no carga, se muestra el diseño de texto en vez de un hueco en blanco */
   const body = im ? `<img class="adx-img" src="${esc(im)}" alt="${esc(x.title)}" loading="lazy" onerror="var a=this.closest('.adx');if(a){a.classList.remove('has-img');a.classList.add('img-err')}this.remove()"><span class="adx-fb">${txt}</span>` : txt;
-  return `<${tag} class="adx adx-${x.place}${im ? ' has-img' : ''}${preview ? '' : ' rv'}"${preview ? '' : ' ' + R()}${attrs}><span class="adx-tag">Publicidad</span>${body}</${tag}>`;
+  return `<${tag} class="adx adx-${x.place} sz-${adSz(x)}${im ? ' has-img' : ''}${preview ? '' : ' rv'}"${preview ? '' : ' ' + R()}${attrs}><span class="adx-tag">Publicidad</span>${body}</${tag}>`;
 }
 
 /* ---------- administrador: sección Publicidad ---------- */
@@ -3186,6 +3238,8 @@ function renderAdEditor(){
     ${fld('Nombre del anunciante', 'data-adf="name"', x.name, {hint:'Solo lo ves tú, en el panel.'})}
     <div class="g2"><div class="f"><label for="ad-place">¿Dónde se muestra?</label><select id="ad-place" class="fi" data-adf="place">${Object.entries(PLACES).map(([k, n]) => `<option value="${k}" ${x.place === k ? 'selected' : ''}>${n}</option>`).join('')}</select><span class="hint" id="ad-place-h"></span></div>
       ${fld('Etiqueta pequeña', 'data-adf="tag"', x.tag, {hint:'Ejemplo: Gastronomía, Promoción.'})}</div>
+    <div class="f"><label>Tamaño en la página</label><div class="szpick">${['chico', 'mediano', 'grande'].map(k => `<label class="${adSz(x) === k ? 'on' : ''}"><input type="radio" name="adsz" data-adf="size" value="${k}" ${adSz(x) === k ? 'checked' : ''}><b>${k[0].toUpperCase() + k.slice(1)}</b><small>Imagen ${AD_SZ[x.place][k].img} px</small></label>`).join('')}</div>
+      <span class="hint" id="ad-cap"></span></div>
     <div class="f"><label>Secciones donde aparece</label><div class="secs">${['home', ...ORDER].map(k => `<label><input type="checkbox" data-adsec="${k}" ${x.secs.includes(k) ? 'checked' : ''}> ${k === 'home' ? 'Inicio' : esc(catN(k))}</label>`).join('')}</div><span class="hint">Si no marcas ninguna, aparece en todas.</span></div></div>
   <div class="ac"><h3>Contenido del banner</h3>
     ${fld('Titular', 'data-adf="title"', x.title)}
@@ -3211,11 +3265,17 @@ function adMap(place){
 }
 function updateAdPrev(){
   const x = byAd(ad.aid), el = $('#adprev'); if(!x || !el) return;
-  const z = AD_SIZE[x.place] || AD_SIZE.side;
+  const z0 = AD_SIZE[x.place] || AD_SIZE.side, zs = AD_SZ[x.place][adSz(x)], dims = zs.img.split(' × ').map(Number);
+  const z = {...z0, w:dims[0], h:dims[1]};
+  const cap = $('#ad-cap');
+  if(cap){
+    const same = S.ads.filter(y => y.on && y.place === x.place).length, mx = AD_CAP[x.place] || 1;
+    cap.innerHTML = `En este lugar se ven hasta <b>${mx} ${mx === 1 ? 'banner' : 'banners'} a la vez</b>${mx > 1 ? ', uno debajo de otro' : ''}. Ahora hay <b>${same}</b> ${same === 1 ? 'activo' : 'activos'} aquí${same > mx ? ': como son más, se turnan cada vez que alguien entra' : ''}.`;
+  }
   el.className = 'prevbox ' + x.place;
   el.innerHTML = `<div class="ap-head"><div><b>Así se verá</b><span>${esc(z.where)}</span></div>${adMap(x.place)}</div>
-    <div class="ap-size"><b>Medida ideal de la imagen: ${z.w} × ${z.h} px</b><span>Se muestra a unos ${z.show} px de ancho; con esta medida se ve nítida en celular y computadora. Si la imagen tiene otra forma, se ve completa pero más alta o más baja.</span><em id="ap-chk"></em></div>
-    <div class="ap-stage" style="max-width:${z.show}px">${adHTML(x, true)}</div>`;
+    <div class="ap-size"><b>Medida ideal de la imagen: ${z.w} × ${z.h} px</b><span>Tamaño <b>${esc(adSz(x))}</b>: ocupa unos ${z.show} × ${zs.h} px en la página. Con esta medida la imagen se ve nítida y llena el espacio; si tiene otra forma, se ajusta sin recortarse y deja orillas.</span><em id="ap-chk"></em></div>
+    <div class="ap-stage" style="max-width:${z.show}px" data-h="${zs.h}">${adHTML(x, true)}</div>`;
   const h = $('#ad-place-h'); if(h) h.textContent = PLACE_HINT[x.place];
   const chk = $('#ap-chk'), im = x.img ? mediaUrl(x.img) : '';
   if(!chk) return;
@@ -3223,11 +3283,11 @@ function updateAdPrev(){
   const t = new Image();
   t.onload = () => {
     const r = t.naturalWidth / t.naturalHeight, ideal = z.w / z.h, off = Math.abs(r - ideal) / ideal;
-    const hgt = Math.round(z.show / r);
+    const hgt = Math.min(Math.round(z.show / r), zs.h);
     chk.className = off < .12 && t.naturalWidth >= z.w * .5 ? 'ok' : 'warn';
     chk.textContent = `Tu imagen mide ${t.naturalWidth} × ${t.naturalHeight} px. ` + (off < .12
       ? (t.naturalWidth >= z.w * .5 ? 'Tiene la forma correcta para este lugar.' : 'Tiene la forma correcta, pero es pequeña: puede verse borrosa.')
-      : `Su forma no es la ideal: en este lugar ocupará unos ${hgt} px de alto (lo ideal son ${Math.round(z.show / ideal)}).`);
+      : `Su forma no es la ideal para el tamaño ${adSz(x)}: se verá completa pero dejará orillas. Usa ${zs.img} px, o elige otro tamaño.`);
   };
   t.onerror = () => { chk.className = 'warn'; chk.textContent = 'La imagen no se pudo cargar. Súbela de nuevo desde tu computadora (las imágenes copiadas de Facebook o Google suelen bloquearse).'; };
   t.src = im;
@@ -4473,6 +4533,7 @@ function mdlHTML(a){
       <div class="by meta"><span>Por <b>${esc(byl(a))}</b></span>${whenFull(a)}${iChat}${a.n} comentarios</div>
       ${pp.length ? `<div class="txt">${pp.join('')}</div>` : ''}
       <div class="share" data-sid="${a.id}">Compartir:<button type="button" data-share="copy">Copiar enlace</button><button type="button" data-share="wa">WhatsApp</button><button type="button" data-share="fb">Facebook</button><button type="button" data-share="x">X</button></div>
+      ${adBlock('strip', a.c)}
       <h2 class="sh">Te puede interesar</h2>
       <div class="row4 mdl-rel">${rel.map(portadaCard).join('')}</div>
     </div>`;
