@@ -1203,6 +1203,8 @@ html.mm-lock{overflow:hidden}
 .prevbox.side .ap-stage .adx{min-height:0}
 .prevbox.side .ap-stage .adx:not(.has-img){min-height:250px}
 
+.rb-emb.warn{border-left-color:#e0a100;background:#fff8e6}.rb-emb.warn .rb-u{white-space:normal;color:#7a5600;font-size:12.5px}
+
 </style>
 </head>
 <body>
@@ -1839,7 +1841,7 @@ function withInline(pp, html){
 /* ---------- editor visual (como en WordPress) ---------- */
 function richCard(u){
   const s = socialOf(u);
-  return `<div class="rb-emb" contenteditable="false" data-url="${esc(u)}"><span class="rb-net n-${s.net}">${esc(NETS[s.net])}</span><span class="rb-u">${esc(trunc(u, 70))}</span><button type="button" class="rb-x" data-act="rb-del" title="Quitar" aria-label="Quitar">×</button></div>`;
+  return `<div class="rb-emb${s.card ? ' warn' : ''}" contenteditable="false" data-url="${esc(u)}"><span class="rb-net n-${s.net}">${esc(NETS[s.net])}</span><span class="rb-u">${s.card ? '<b>Se verá como botón.</b> Es un enlace de "Compartir"; para ver la publicación dentro de la nota usa el enlace completo.' : esc(trunc(u, 70))}</span><button type="button" class="rb-x" data-act="rb-del" title="Quitar" aria-label="Quitar">×</button></div>`;
 }
 function richFig(src, cap){
   return `<figure class="rb-img" contenteditable="false" data-src="${esc(src)}"><img src="${esc(mediaUrl(src))}" alt=""><input class="rb-cap" value="${esc(cap)}" placeholder="Pie de foto (opcional). Ejemplo: Foto: Cortesía" aria-label="Pie de foto"><button type="button" class="rb-x" data-act="rb-del" title="Quitar foto" aria-label="Quitar foto">×</button></figure>`;
