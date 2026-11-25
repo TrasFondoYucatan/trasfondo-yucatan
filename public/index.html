@@ -1756,12 +1756,24 @@ const bodyRefs = body => bodyBlocks(body).filter(b => b.type === 'img').map(b =>
 
 /* redes sociales y videos que se pueden insertar */
 const NETS = {fb:'Facebook', ig:'Instagram', x:'X (Twitter)', tk:'TikTok', yt:'YouTube', vm:'Vimeo', web:'Enlace'};
+function cleanFb(u){
+  try{
+    const x = new URL(u); x.hostname = 'www.facebook.com';
+    const keep = new URLSearchParams();
+    ['story_fbid', 'id', 'v', 'fbid'].forEach(k => { if(x.searchParams.get(k)) keep.set(k, x.searchParams.get(k)); });
+    x.search = keep.toString(); x.hash = '';
+    return x.toString();
+  }catch(e){ return u; }
+}
 function socialOf(u){
   let m;
   if(/(?:youtube\.com|youtu\.be)\//i.test(u) && /(?:watch\?v=|embed\/|shorts\/|live\/|youtu\.be\/)[\w-]{11}/.test(u)) return {net:'yt'};
   if(/vimeo\.com\/(?:video\/)?\d+/i.test(u)) return {net:'vm'};
   if(/(?:facebook\.com|fb\.watch)\//i.test(u)){
-    const vid = /\/videos\/|\/reel\/|fb\.watch|\/watch/i.test(u);
+    /* los enlaces de "Compartir" (facebook.com/share/…) no se pueden insertar: se muestran como tarjeta */
+    if(/facebook\.com\/share\//i.test(u) || /fb\.watch/i.test(u)) return {net:'fb', card:1};
+    u = cleanFb(u);
+    const vid = /\/videos\/|\/reel\/|\/watch/i.test(u);
     return {net:'fb', src:`https://www.facebook.com/plugins/${vid ? 'video' : 'post'}.php?href=${encodeURIComponent(u)}&show_text=true&width=500`, h:vid ? 420 : 640, w:500};
   }
   if((m = u.match(/instagram\.com\/(?:[\w.]+\/)?(p|reel|tv)\/([\w-]+)/i))) return {net:'ig', src:`https://www.instagram.com/${m[1].toLowerCase() === 'tv' ? 'p' : m[1].toLowerCase()}/${m[2]}/embed/captioned/`, h:720, w:500};
@@ -1772,6 +1784,7 @@ function socialOf(u){
 const hostOf = u => { try{ return new URL(u).hostname.replace(/^www\./, ''); }catch(e){ return u; } };
 function embedHTML(u){
   const s = socialOf(u), link = `<a class="bemb-l" href="${esc(u)}" target="_blank" rel="noopener">Ver en ${esc(s.net === 'web' ? hostOf(u) : NETS[s.net])} ↗</a>`;
+  if(s.card) return `<a class="bemb card fbc" href="${esc(u)}" target="_blank" rel="noopener"><b>Publicación de Facebook</b><span>Ábrela para verla completa.</span><em>Ver en Facebook ↗</em></a>`;
   if(s.net === 'yt' || s.net === 'vm') return `<figure class="bemb vid"><div class="bemb-v">${videoEmbed(u)}</div>${link}</figure>`;
   if(s.src) return `<figure class="bemb so so-${s.net}"><iframe src="${esc(s.src)}" title="Publicación de ${esc(NETS[s.net])}" loading="lazy" scrolling="no" allow="encrypted-media; picture-in-picture; clipboard-write" allowfullscreen style="max-width:${s.w}px;height:${s.h}px"></iframe>${link}</figure>`;
   return `<a class="bemb card" href="${esc(u)}" target="_blank" rel="noopener"><b>${esc(hostOf(u))}</b><span>${esc(trunc(u, 80))}</span><em>Abrir enlace ↗</em></a>`;
@@ -1946,7 +1959,11 @@ function richPopOk(){
     else document.execCommand('createLink', false, u);
     rich.edit = null; richSave(); syncRich(); toast('Enlace agregado');
   }
-  else { richInsertBlock(richCard(u)); toast(socialOf(u).net === 'web' ? 'Enlace insertado' : 'Publicación insertada'); }
+  else {
+    richInsertBlock(richCard(u));
+    const so = socialOf(u);
+    toast(so.card ? 'Es un enlace de "Compartir" de Facebook: se mostrará como botón. Para ver la publicación dentro de la nota, usa su enlace completo (pasos abajo del texto).' : so.net === 'web' ? 'Enlace insertado' : 'Publicación insertada');
+  }
 }
 function richCmd(c){
   richRestore();
