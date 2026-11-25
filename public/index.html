@@ -19,7 +19,10 @@
 <meta property="og:image:alt" content="Trasfondo Yucatán · Informamos, conectamos, transformamos">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://trasfondoyucatan.com/og.jpg">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230a1163'/%3E%3Crect x='7' y='22' width='50' height='24' fill='%23d3141f'/%3E%3Ctext x='32' y='41' font-family='Arial,sans-serif' font-weight='900' font-size='19' fill='white' text-anchor='middle'%3ETF%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <script type="application/ld+json" id="ld"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1169,6 +1172,37 @@ html.mm-lock{overflow:hidden}
 .adx.has-img{display:block;padding:0!important;min-height:0!important;max-height:none!important;flex:0 0 auto!important;background:#fff;align-self:start}
 .adx.has-img .adx-img{position:static;display:block;width:100%;height:auto;object-fit:contain;z-index:auto}
 
+/* ===== fecha y hora en la firma ===== */
+.by .wd{display:inline-flex;align-items:center;gap:6px}
+.by .wd svg{width:16px;height:16px;flex:none}
+/* ===== lista en el editor ===== */
+.fi.rich p.li{position:relative;padding-left:22px}
+.fi.rich p.li::before{content:'';position:absolute;left:4px;top:.62em;width:9px;height:9px;background:var(--red);transform:skewX(-14deg)}
+/* ===== banner con imagen que no carga ===== */
+.adx-fb{display:none}
+.adx.img-err .adx-fb{display:contents}
+/* ===== vista previa de banners ===== */
+.prevbox{display:grid;gap:14px}
+.ap-head{display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.ap-head b{display:block;color:var(--navy);font-size:15px}.ap-head span{font-size:13px;color:var(--muted)}
+.amap{width:170px;flex:none;background:#fff;border-radius:8px;padding:6px;box-shadow:0 4px 14px rgba(10,17,99,.1)}
+.am-top{height:12px;border-radius:3px;background:var(--navy);margin-bottom:5px;box-shadow:0 6px 0 -3px var(--red)}
+.am-body{display:flex;gap:5px}.am-body.col{flex-direction:column}
+.am-main{flex:2;display:grid;gap:4px}.am-side{flex:1;display:grid;gap:4px;align-content:start}
+.am-row{display:flex;gap:4px}.am-row i{flex:1}
+.amap i{display:block;height:12px;border-radius:3px;background:#e4e7f2}
+.amap i.big{height:30px}.amap i.k{height:18px}.amap i.t{height:8px;background:var(--navy);opacity:.6}.amap i.l{height:5px}.amap i.l.s{width:60%}
+.amap i.hit{height:auto;min-height:18px;display:grid;place-items:center;font-style:normal;font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--red);animation:apPulse 1.6s ease-in-out infinite}
+.amap.side i.hit{min-height:30px}.amap.strip i.hit{min-height:14px}.amap.inline i.hit{min-height:14px}
+@keyframes apPulse{50%{box-shadow:0 0 0 4px rgba(211,20,31,.25)}}
+.ap-size{display:grid;gap:4px;padding:12px 14px;border-radius:10px;background:#fff;border-left:4px solid var(--navy);font-size:13px;color:var(--muted)}
+.ap-size b{color:var(--navy);font-size:14px}
+.ap-size em{font-style:normal;font-weight:700}.ap-size em.ok{color:#1b8a4b}.ap-size em.warn{color:#b26b00}
+.ap-stage{width:100%}
+.prevbox .ap-stage .adx{width:100%;max-width:none;margin:0}
+.prevbox.side .ap-stage .adx{min-height:0}
+.prevbox.side .ap-stage .adx:not(.has-img){min-height:250px}
+
 </style>
 </head>
 <body>
@@ -1334,7 +1368,7 @@ const defaults = () => ({
     social:{text:'SÍGUENOS\nEN NUESTRAS\nREDES SOCIALES',fb:'',ig:'',tk:'',x:'',yt:''},
     foot1:'Informamos - Conectamos - Transformamos', foot2:'© ' + new Date().getFullYear() + ' Todos los derechos reservados',
     seoTitle:'Trasfondo Yucatán · Noticias de Mérida y Yucatán', seoDesc:'Noticias de Mérida y Yucatán: seguridad, política, deportes y entretenimiento. Detrás de cada nota hay un trasfondo.',
-    site:{url:'', name:'Trasfondo Yucatán', ogImg:'', tw:'', ga:'', gsc:'', ai:'', cpm:'120', live:false, kp:false, sowpAd:false}
+    site:{url:'', name:'Trasfondo Yucatán', ogImg:'', tw:'', ga:'', gsc:'', ai:'', cpm:'120', live:false, kp:false, sowpAd:false, byline:'Redacción Trasfondo'}
   },
   stats:{views:{},clicks:{},daily:{},imp:{},time:{},reads:{},adimp:{},adclk:{}},
   slots:{hero:1,side:[2,3],latest:[4,5,6,7],portada:[8,9,10,11],mas:[12,13,14,15],opinion:[16,17]},
@@ -1580,7 +1614,27 @@ const pic = (a, cls = '', w, h, noPlay, alt, eager) => {
   return `<div class="pic ${cls} ${s ? '' : 'noimg'}" style="--g:${CATG[a.c] || CATG.merida}">${s ? `<img src="${esc(s)}" alt="${esc(alt || '')}" ${eager ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"'} decoding="async" onload="this.classList.add('on')" onerror="this.parentNode.classList.add('noimg');this.remove()">` : ''}${a.video && !noPlay ? '<span class="play"></span>' : ''}</div>`;
 };
 const tl = a => `<a class="cl" href="${href(artPath(a))}">${esc(a.t)}</a>`;
-const tm = a => `<time datetime="${esc(a.pub || '')}">${esc(a.h)}</time>`;
+/* fecha y hora automáticas (hora de Mérida) */
+const TZ = 'America/Merida';
+const fmtD = (d, o) => { try{ return new Intl.DateTimeFormat('es-MX', {timeZone:TZ, ...o}).format(d); }catch(e){ return new Intl.DateTimeFormat('es-MX', o).format(d); } };
+const pubD = a => { const d = new Date(a.pub); return isNaN(d) ? null : d; };
+const horaDe = d => fmtD(d, {hour:'numeric', minute:'2-digit', hour12:true}).replace(/\s+/g, ' ').replace(/a\.?\s?m\.?/i, 'a. m.').replace(/p\.?\s?m\.?/i, 'p. m.');
+const fechaLarga = d => { const t = fmtD(d, {weekday:'long', day:'numeric', month:'long', year:'numeric'}); return t.charAt(0).toUpperCase() + t.slice(1); };
+const dayTZ = d => fmtD(d, {year:'numeric', month:'2-digit', day:'2-digit'});
+function whenShort(a){
+  const d = pubD(a); if(!d) return a.h || '';
+  const m = (Date.now() - d) / 60000;
+  if(m < 0) return fmtD(d, {day:'numeric', month:'short'}) + ' · ' + horaDe(d);
+  if(m < 1) return 'Hace un momento';
+  if(m < 60) return `Hace ${Math.floor(m)} min`;
+  if(dayTZ(d) === dayTZ(new Date())) return `Hoy · ${horaDe(d)}`;
+  if(dayTZ(d) === dayTZ(new Date(Date.now() - 864e5))) return `Ayer · ${horaDe(d)}`;
+  return fmtD(d, {day:'numeric', month:'short', year:'numeric'}).replace('.', '') + ' · ' + horaDe(d);
+}
+const tm = a => `<time datetime="${esc(a.pub || '')}">${esc(whenShort(a))}</time>`;
+const iCal = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>';
+const byl = a => (a.au || '').trim() || (S.cfg.site.byline || '').trim() || 'Redacción Trasfondo';
+const whenFull = a => { const d = pubD(a); if(!d) return iClock + tm(a); return `<span class="wd">${iCal}<time datetime="${esc(a.pub)}">${esc(fechaLarga(d))}</time></span><span class="wd">${iClock}${esc(horaDe(d))}</span>`; };
 const playOv = a => a.video ? '<span class="play"></span>' : '';
 const iClock = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
 const iChat  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>';
@@ -1779,7 +1833,7 @@ function richFig(src, cap){
 }
 function richEditHTML(body){
   const tk = raw => inlineTok(raw).map(t => { let h = esc(t.s); if(t.i) h = `<i>${h}</i>`; if(t.b) h = `<b>${h}</b>`; if(t.h) h = `<a href="${esc(t.h)}">${h}</a>`; return h; }).join('');
-  const html = bodyBlocks(body).map(b => b.type === 'p' ? `<p>${tk(b.raw)}</p>` : b.type === 'li' ? `<p>- ${tk(b.raw)}</p>` : b.type === 'img' ? richFig(b.src, b.cap) : richCard(b.url)).join('');
+  const html = bodyBlocks(body).map(b => b.type === 'p' ? `<p>${tk(b.raw)}</p>` : b.type === 'li' ? `<p class="li">${tk(b.raw)}</p>` : b.type === 'img' ? richFig(b.src, b.cap) : richCard(b.url)).join('');
   return html || '<p><br></p>';
 }
 function serInline(n){
@@ -1800,6 +1854,7 @@ function serInline(n){
 function serBlock(n){
   if(n.classList && n.classList.contains('rb-img')){ const c = (n.querySelector('.rb-cap') || {}).value || ''; return `![${c.replace(/[\[\]\n]/g, ' ').trim()}](${n.dataset.src})`; }
   if(n.classList && n.classList.contains('rb-emb')) return n.dataset.url;
+  if(n.classList && n.classList.contains('li')){ const t = serInline(n).replace(/\n+/g, ' ').trim().replace(/^[-•]\s*/, ''); return t ? '\n- ' + t + '\n' : ''; }
   return serInline(n);
 }
 function serRich(root){
@@ -1871,7 +1926,8 @@ function richPop(kind){
   const i = $('#rt-u'), t = $('#rt-t');
   i.value = ln ? ln.getAttribute('href') || '' : ''; t.value = '';
   i.placeholder = kind === 'link' ? 'https://pagina-de-la-institucion.gob.mx' : 'https://www.facebook.com/…/posts/…';
-  (two ? t : i).focus();
+  p.scrollIntoView({block:'nearest', behavior:'smooth'});
+  (two ? t : i).focus({preventScroll:true});
 }
 function richPopOk(){
   const p = $('#rt-pop'); if(!p) return;
@@ -1896,10 +1952,22 @@ function richCmd(c){
   richRestore();
   if(c === 'b') document.execCommand('bold');
   else if(c === 'i') document.execCommand('italic');
-  else if(c === 'unlink') document.execCommand('unlink');
+  else if(c === 'unlink'){
+    const sel = getSelection();
+    if(!linkAt(rich.range) && !(sel.rangeCount && !sel.isCollapsed && $('#e-rich').querySelector('a'))){ toast('Pon el cursor sobre un enlace (texto subrayado) para quitarlo'); return; }
+    if(sel.isCollapsed){ const ln = linkAt(rich.range); if(ln){ const r = document.createRange(); r.selectNodeContents(ln); sel.removeAllRanges(); sel.addRange(r); } }
+    document.execCommand('unlink'); toast('Enlace quitado');
+  }
   else if(c === 'li'){
-    const b = richBlockAt();
-    if(b && !b.matches('.rb-img,.rb-emb')){ const t = b.textContent.trim(); if(/^(-|•)\s*/.test(t)) b.innerHTML = b.innerHTML.replace(/^(\s|&nbsp;)*(-|•)\s*/, ''); else b.insertAdjacentHTML('afterbegin', '- '); }
+    let b = richBlockAt();
+    const ed = $('#e-rich');
+    if(!b || b.nodeType !== 1){ b = ed.lastElementChild; }
+    if(b && b.nodeType === 1 && !b.matches('.rb-img,.rb-emb')){
+      if(b.tagName !== 'P'){ const p = document.createElement('p'); p.innerHTML = b.innerHTML; b.replaceWith(p); b = p; }
+      b.innerHTML = b.innerHTML.replace(/^(\s|&nbsp;)*(-|•)\s*/, '');
+      b.classList.toggle('li');
+      toast(b.classList.contains('li') ? 'Párrafo convertido en punto de lista' : 'Se quitó el punto de lista');
+    }
   }
   richSave(); syncRich();
 }
@@ -1986,10 +2054,10 @@ function vArt(id){
     <span class="pill rv" ${R()}>${esc(catN(a.c))}</span>
     <h1 class="rv" ${R()}>${esc(a.t)}</h1>
     <p class="lead rv" ${R()}>${esc(a.l)}</p>
-    <div class="by meta rv" ${R()}><span>Por <b>${esc(a.au || 'Redacción Trasfondo')}</b></span>${iClock}${tm(a)}${iChat}${a.n} comentarios</div>
+    <div class="by meta rv" ${R()}><span>Por <b>${esc(byl(a))}</b></span>${whenFull(a)}${iChat}${a.n} comentarios</div>
     ${media ? `<div class="rv" ${R()}>${media}</div>` : ''}
     ${pp.length ? `<div class="txt rv" ${R()}>${pp.join('')}</div>` : ''}
-    <div class="share rv" ${R()}>Compartir:<button data-share>Copiar enlace</button><button data-share>WhatsApp</button><button data-share>Facebook</button></div>
+    <div class="share rv" ${R()} data-sid="${a.id}">Compartir:<button type="button" data-share="copy">Copiar enlace</button><button type="button" data-share="wa">WhatsApp</button><button type="button" data-share="fb">Facebook</button><button type="button" data-share="x">X</button></div>
     ${sh('Te puede interesar')}<div class="row4" style="grid-template-columns:repeat(3,1fr)">${rel.map(portadaCard).join('')}</div>
   </article><div class="col-r">${latestBox()}${adBlock('side', a.c)}${socialCard()}</div></div>`;
 }
@@ -2121,7 +2189,18 @@ document.addEventListener('click', e => {
     return;
   }
   const s = e.target.closest('[data-share]');
-  if(s){ toast(s.textContent === 'Copiar enlace' ? 'Enlace copiado' : 'Compartiendo en ' + s.textContent); return; }
+  if(s){
+    const box = s.closest('[data-sid]'), a = box ? byId(+box.dataset.sid) : null; if(!a) return;
+    const url = absUrl(artPath(a)) || location.href, k = s.dataset.share;
+    if(k === 'copy'){ copyText(url).then(ok => toast(ok ? 'Enlace copiado. Ya puedes pegarlo donde quieras.' : 'No se pudo copiar el enlace')); return; }
+    const t = a.t + ' ' + url;
+    const go = k === 'wa' ? 'https://wa.me/?text=' + encodeURIComponent(t)
+      : k === 'fb' ? 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url)
+      : 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(a.t) + '&url=' + encodeURIComponent(url);
+    const l = document.createElement('a'); l.href = go; l.target = '_blank'; l.rel = 'noopener';
+    document.body.appendChild(l); l.click(); l.remove();
+    return;
+  }
   const a = e.target.closest('a[href]');
   if(a && !mod && !a.target){
     const hf = a.getAttribute('href');
@@ -2228,7 +2307,7 @@ function tplHome(){
     </div>
     <div class="st2">
       <div class="ac"><h3>Notas recientes</h3><p class="sub">Haz clic en una para editarla.</p>
-        <div class="rk">${recent.map(a => { const sc = seoScore(a); return `<div class="rk-i hm-n" data-edit="${a.id}" tabindex="0" role="button">${pic(a, 'th')}<div><div class="rk-t"><span>${esc(trunc(a.t, 64)) || '(Sin título)'}</span><em style="color:${ringColor(sc)}">SEO ${sc}</em></div><div class="rk-s">${esc(catN(a.c))} · ${esc(a.h)}</div></div></div>`; }).join('')}</div>
+        <div class="rk">${recent.map(a => { const sc = seoScore(a); return `<div class="rk-i hm-n" data-edit="${a.id}" tabindex="0" role="button">${pic(a, 'th')}<div><div class="rk-t"><span>${esc(trunc(a.t, 64)) || '(Sin título)'}</span><em style="color:${ringColor(sc)}">SEO ${sc}</em></div><div class="rk-s">${esc(catN(a.c))} · ${esc(whenShort(a))}</div></div></div>`; }).join('')}</div>
         <div class="dls"><button type="button" class="btn ghost" data-s="noticias">Ver todas las notas</button></div></div>
       <div>
         <div class="ac" style="margin-top:0"><h3>Cómo va el sitio</h3>
@@ -2245,7 +2324,7 @@ function setTab(t){
   document.querySelectorAll('#ad-editor [data-tab]').forEach(b => { b.classList.toggle('on', b.dataset.tab === t); b.setAttribute('aria-selected', b.dataset.tab === t); });
 }
 
-function goSec(k){ ad.sec = k; renderAdmin(); window.scrollTo(0, 0); enterAnim(); }
+function goSec(k){ ad.sec = k; if(['stats', 'ads', 'inicio', 'ai'].includes(k)) SV.statsLoaded = false; renderAdmin(); window.scrollTo(0, 0); enterAnim(); if(SV.on) loadStats(); }
 function renderAdmin(){
   if(!byId(ad.id)) ad.id = S.arts[0].id;
   const mn = $('#ad-menu');
@@ -2317,12 +2396,12 @@ function renderEditor(){
     ${fld('Sumario', 'data-a="l"', a.l, {area:1, hint:'La frase corta que aparece debajo del título. También es la descripción para Google si no escribes otra.'})}
     <div class="g2">
       <div class="f"><label for="e-c">Sección</label><select id="e-c" class="fi" data-a="c">${ORDER.map(k => `<option value="${k}" ${a.c === k ? 'selected' : ''}>${esc(catN(k))}</option>`).join('')}</select><span class="hint">Define en qué pestaña aparece la nota.</span></div>
-      ${isOp ? fld('Autor de la columna', 'data-a="au"', a.au || '', {ph:'Nombre y apellido'}) : ''}
+      <div class="f"><label for="e-au">${isOp ? 'Autor de la columna' : 'Firma (autor de la nota)'}</label><input class="fi" id="e-au" data-a="au" list="au-list" value="${esc(a.au || '')}" placeholder="${esc(S.cfg.site.byline || 'Redacción Trasfondo')}"><datalist id="au-list">${[...new Set(S.arts.map(x => (x.au || '').trim()).filter(Boolean))].map(n => `<option value="${esc(n)}">`).join('')}</datalist><span class="hint">Nombre del reportero que firma. Si lo dejas vacío dice "${esc(S.cfg.site.byline || 'Redacción Trasfondo')}".</span></div>
     </div>
     ${richTpl(a)}
     <details class="more"><summary>Más opciones</summary>
       <div class="g2">
-        ${fld('Hora que se muestra', 'data-a="h"', a.h, {hint:'Texto libre, por ejemplo: Hace 2 horas.'})}
+        ${fld('Fecha y hora de publicación', 'data-a="pub"', toLocalInput(a.pub), {type:'datetime-local', hint:'Se pone sola al crear la nota y la página la muestra con fecha y hora. Cámbiala solo para corregirla.'})}
         ${fld('Comentarios', 'data-a="n"', a.n, {type:'number', min:0})}
       </div>
     </details>
@@ -2348,7 +2427,6 @@ function renderEditor(){
     ${fld('Descripción para Google', 'data-a="seoD"', a.seoD || '', {area:1, rows:3, ph:a.l, hint:'<span id="cnt-d" class="cnt"></span> Ideal: de 70 a 160. Si la dejas vacía se usa el Sumario; escríbela solo si quieres un texto distinto para Google.'})}
     <div class="g2">
       <div class="f"><label for="e-slug">Dirección web de la nota</label><div class="urlrow"><span id="slug-pre">/${esc(a.c)}/</span><input class="fi" id="e-slug" data-a="slug" value="${esc(a.slug)}"></div><span class="hint">Se crea sola con el título mientras la nota es nueva. Una vez publicada, no la cambies.</span></div>
-      ${fld('Fecha y hora de publicación', 'data-a="pub"', toLocalInput(a.pub), {type:'datetime-local', hint:'Es la fecha que lee Google.'})}
     </div>
     <div id="seo-live"></div>
   </div>`;
@@ -2395,7 +2473,10 @@ function tplStats(){
   const lowHtml = low.every(x => x.s === 100) ? '<p class="hint" style="margin-top:12px">Todas las notas tienen una calificación SEO perfecta.</p>'
     : low.map(x => `<div class="rk-i" data-edit="${x.a.id}" data-seo="1" tabindex="0" role="button"><span class="rk-n" style="color:${ringColor(x.s)}">${x.s}</span><div>
       <div class="rk-t"><span>${esc(trunc(x.a.t, 60))}</span></div><div class="rk-s">${x.f ? esc(x.f.txt) : 'Todo en orden'}</div></div></div>`).join('');
-  return `<div class="info">Las cifras son de ejemplo para la demostración, más las lecturas, clics y tiempo de lectura reales que ocurran en este navegador. En el sitio publicado se conectan Google Analytics y Search Console para medir a todos los visitantes.</div>
+  const hasDemo = S.arts.some(a => a.demo !== false) || S.ads.some(x => x.demo);
+  return `<div class="info">${SV.on
+    ? `<b>Datos reales.</b> Son las visitas, lecturas, clics y tiempo de lectura de todas las personas que entran al sitio, guardados en el servidor de Netlify desde que se publicó. Tus propias visitas también cuentan.${hasDemo ? ' Las notas y banners de ejemplo suman además cifras de ejemplo.' : ''} Google Analytics y Search Console miden aparte, con más detalle.`
+    : 'Las cifras son de ejemplo para la demostración, más las lecturas, clics y tiempo de lectura reales que ocurran en este navegador. En el sitio publicado se conectan Google Analytics y Search Console para medir a todos los visitantes.'}</div>
     <div class="kpis" data-tour="kpis">
       <div class="kpi"><span>Visitas al sitio</span><b data-n="${visits}" data-f="int">${fmt(visits)}</b><small>Últimos 14 días</small></div>
       <div class="kpi nv"><span>Lecturas de notas</span><b data-n="${reads}" data-f="int">${fmt(reads)}</b><small>Últimos 14 días</small></div>
@@ -2450,6 +2531,8 @@ function tplTextos(){
     <div class="ac"><h3>Títulos de los bloques</h3>
       <div class="g2">${fld('Columna de noticias recientes', 'data-cfg="sec.latest"', c.sec.latest)}${fld('Columna de opinión', 'data-cfg="sec.opinion"', c.sec.opinion)}
       ${fld('Bloque debajo del banner', 'data-cfg="sec.portada"', c.sec.portada)}${fld('Bloque del final', 'data-cfg="sec.mas"', c.sec.mas)}</div></div>
+    <div class="ac"><h3>Firma de las notas</h3><p class="sub">Se muestra en las notas que no tienen el nombre de un reportero.</p>
+      ${fld('Firma predeterminada', 'data-cfg="site.byline"', S.cfg.site.byline || '', {ph:'Redacción Trasfondo'})}</div>
     <div class="ac"><h3>Lectura de las notas</h3><p class="sub">Al activarlo, la página subraya las frases importantes de cada nota y las junta como recortes en la columna izquierda.</p>
       <label class="sw"><input type="checkbox" id="kp-sw" ${S.cfg.site.kp ? 'checked' : ''}> Resaltar frases importantes y mostrar recortes</label></div>
     <div class="ac"><h3>Pie de página</h3>
@@ -2853,7 +2936,7 @@ const orgId = () => absUrl('') + '#org';
 function orgLd(){
   const s = S.cfg.site, sa = Object.entries(S.cfg.social).filter(([k, v]) => k !== 'text' && /^https?:/.test(v)).map(([, v]) => v);
   const og = s.ogImg ? absU(mediaUrl(s.ogImg)) : '';
-  return {'@type':'NewsMediaOrganization', '@id':orgId(), name:s.name, url:absUrl(''), sameAs:sa, logo:/^https?:/.test(og) ? {'@type':'ImageObject', url:og} : ''};
+  return {'@type':'NewsMediaOrganization', '@id':orgId(), name:s.name, url:absUrl(''), sameAs:sa, logo:PATHMODE ? {'@type':'ImageObject', url:absUrl('logo-512.png'), width:512, height:512} : (/^https?:/.test(og) ? {'@type':'ImageObject', url:og} : '')};
 }
 const crumbs = list => ({'@type':'BreadcrumbList', itemListElement:list.map(([n, p], i) => ({'@type':'ListItem', position:i + 1, name:n, item:absUrl(p)}))});
 function seoHome(){
@@ -2872,7 +2955,7 @@ function seoArticle(a){
   return {title, desc:a.seoD || a.l, path:p, type:'article', pub:a.pub, section:catN(a.c), img,
     ld:clean({'@context':'https://schema.org', '@graph':[
       {'@type':'NewsArticle', headline:trunc(a.t, 110), description:a.seoD || a.l, image:img ? [img] : '', datePublished:a.pub, dateModified:a.mod || a.pub,
-        author:[a.au ? {'@type':'Person', name:a.au} : {'@type':'Organization', name:s.name}], publisher:{'@id':orgId()},
+        author:[a.au ? {'@type':'Person', name:a.au} : {'@type':'Organization', name:byl(a)}], publisher:{'@id':orgId()},
         mainEntityOfPage:{'@type':'WebPage', '@id':absUrl(p)}, articleSection:catN(a.c), keywords:kwAll(a), wordCount:(plainBody(a.body).match(/\S+/g) || []).length || '', inLanguage:'es-MX', isAccessibleForFree:true},
       orgLd(), crumbs([['Inicio', ''], [catN(a.c), a.c], [a.t, p]])]})};
 }
@@ -3054,9 +3137,9 @@ function adHTML(x, preview){
   const link = safeUrl(x.link), tag = preview ? 'div' : 'a';
   const attrs = preview ? '' : ` href="${esc(link)}" data-ad="${x.id}"${link !== '#' ? ' target="_blank" rel="sponsored noopener"' : ''}`;
   const im = x.img ? mediaUrl(x.img) : '';
-  const body = im
-    ? `<img class="adx-img" src="${esc(im)}" alt="${esc(x.title)}" loading="lazy">`
-    : `<span class="adx-c"><span class="adx-k">${esc(x.tag || 'Anuncio')}</span><b class="adx-t">${esc(x.title)}</b><p class="adx-d">${esc(x.text)}</p></span><span class="adx-b">${esc(x.btn || 'Conoce más')} ›</span>`;
+  const txt = `<span class="adx-c"><span class="adx-k">${esc(x.tag || 'Anuncio')}</span><b class="adx-t">${esc(x.title)}</b><p class="adx-d">${esc(x.text)}</p></span><span class="adx-b">${esc(x.btn || 'Conoce más')} ›</span>`;
+  /* si la imagen no carga, se muestra el diseño de texto en vez de un hueco en blanco */
+  const body = im ? `<img class="adx-img" src="${esc(im)}" alt="${esc(x.title)}" loading="lazy" onerror="var a=this.closest('.adx');if(a){a.classList.remove('has-img');a.classList.add('img-err')}this.remove()"><span class="adx-fb">${txt}</span>` : txt;
   return `<${tag} class="adx adx-${x.place}${im ? ' has-img' : ''}${preview ? '' : ' rv'}"${preview ? '' : ' ' + R()}${attrs}><span class="adx-tag">Publicidad</span>${body}</${tag}>`;
 }
 
@@ -3091,16 +3174,44 @@ function renderAdEditor(){
     <div class="g2">${fld('Texto del botón', 'data-adf="btn"', x.btn)}${fld('Enlace de destino', 'data-adf="link"', x.link, {ph:'https://…', hint:'Sitio, WhatsApp o redes del anunciante. Se abre en otra pestaña.'})}</div>
     <div class="g2">${mediaBlock({k:'adimg', title:'Imagen del banner (opcional)', pv:'pv-adimg', accept:'image/*', ph:'o pega el enlace de una imagen (https://…)', hint:'Si subes una imagen, reemplaza el diseño automático.'})}</div>
     <div class="prevbox ${x.place}" id="adprev"></div></div>
-  <div class="ac"><h3>Rendimiento</h3><p class="sub">${x.demo ? 'Cifras de ejemplo más las impresiones y clics reales de este navegador.' : 'Impresiones y clics registrados en este navegador.'}</p>
+  <div class="ac"><h3>Rendimiento</h3><p class="sub">${x.demo ? 'Cifras de ejemplo más las impresiones y clics reales.' : SV.on ? 'Impresiones y clics reales de todos los visitantes del sitio.' : 'Impresiones y clics registrados en este navegador.'}</p>
     <div class="perf"><div><small>Impresiones</small><b>${fmt(m.imp)}</b></div><div><small>Clics</small><b>${fmt(m.clk)}</b></div><div><small>CTR</small><b>${pct(m.ctr)}</b></div></div>
     <div class="g2">${fld('Tarifa por mil impresiones (MXN)', 'data-cfg="site.cpm"', S.cfg.site.cpm, {type:'number', min:0, hint:'Con tu tarifa, este banner genera aprox. ' + fmtMoney(m.imp / 1000 * cpm) + '.'})}</div></div>`;
   updateAdPrev(); updatePreviews();
 }
+const AD_SIZE = {
+  side:{w:600, h:500, show:300, where:'Columna derecha del inicio, de las secciones y de las notas'},
+  inline:{w:1200, h:300, show:680, where:'A la mitad del texto de cada nota'},
+  strip:{w:1200, h:200, show:1100, where:'Franja a todo lo ancho entre los bloques del inicio'}
+};
+function adMap(place){
+  const b = c => `<i class="${c}"></i>`;
+  if(place === 'inline') return `<div class="amap inline"><div class="am-top"></div><div class="am-body"><div class="am-main">${b('t')}${b('l')}${b('l')}<i class="hit">Aquí</i>${b('l')}${b('l s')}</div><div class="am-side">${b('k')}${b('k')}</div></div></div>`;
+  if(place === 'strip') return `<div class="amap strip"><div class="am-top"></div><div class="am-body col"><div class="am-row">${b('k big')}${b('k')}</div><i class="hit">Aquí</i><div class="am-row">${b('k')}${b('k')}${b('k')}</div></div></div>`;
+  return `<div class="amap side"><div class="am-top"></div><div class="am-body"><div class="am-main">${b('k big')}${b('k')}${b('k')}</div><div class="am-side">${b('k')}${b('k')}<i class="hit">Aquí</i></div></div></div>`;
+}
 function updateAdPrev(){
   const x = byAd(ad.aid), el = $('#adprev'); if(!x || !el) return;
+  const z = AD_SIZE[x.place] || AD_SIZE.side;
   el.className = 'prevbox ' + x.place;
-  el.innerHTML = '<p class="hint" style="margin:0 0 10px">Vista previa</p>' + adHTML(x, true);
+  el.innerHTML = `<div class="ap-head"><div><b>Así se verá</b><span>${esc(z.where)}</span></div>${adMap(x.place)}</div>
+    <div class="ap-size"><b>Medida ideal de la imagen: ${z.w} × ${z.h} px</b><span>Se muestra a unos ${z.show} px de ancho; con esta medida se ve nítida en celular y computadora. Si la imagen tiene otra forma, se ve completa pero más alta o más baja.</span><em id="ap-chk"></em></div>
+    <div class="ap-stage" style="max-width:${z.show}px">${adHTML(x, true)}</div>`;
   const h = $('#ad-place-h'); if(h) h.textContent = PLACE_HINT[x.place];
+  const chk = $('#ap-chk'), im = x.img ? mediaUrl(x.img) : '';
+  if(!chk) return;
+  if(!im){ chk.textContent = 'Sin imagen: se usa el diseño automático con el titular, el texto y el botón.'; return; }
+  const t = new Image();
+  t.onload = () => {
+    const r = t.naturalWidth / t.naturalHeight, ideal = z.w / z.h, off = Math.abs(r - ideal) / ideal;
+    const hgt = Math.round(z.show / r);
+    chk.className = off < .12 && t.naturalWidth >= z.w * .5 ? 'ok' : 'warn';
+    chk.textContent = `Tu imagen mide ${t.naturalWidth} × ${t.naturalHeight} px. ` + (off < .12
+      ? (t.naturalWidth >= z.w * .5 ? 'Tiene la forma correcta para este lugar.' : 'Tiene la forma correcta, pero es pequeña: puede verse borrosa.')
+      : `Su forma no es la ideal: en este lugar ocupará unos ${hgt} px de alto (lo ideal son ${Math.round(z.show / ideal)}).`);
+  };
+  t.onerror = () => { chk.className = 'warn'; chk.textContent = 'La imagen no se pudo cargar. Súbela de nuevo desde tu computadora (las imágenes copiadas de Facebook o Google suelen bloquearse).'; };
+  t.src = im;
 }
 function newAd(over){
   const x = {id:S.nextAd++, name:'Nuevo anunciante', place:'side', on:true, demo:false, tag:'Anuncio', title:'Escribe aquí el titular del banner', text:'Una frase corta sobre la oferta.', btn:'Conoce más', link:'', img:'', secs:[], ...over};
@@ -4340,9 +4451,9 @@ function mdlHTML(a){
       <div class="mdl-top"><span class="pill">${esc(catN(a.c))}</span><span class="mdl-crumb">${esc(S.cfg.site.name)} · ${esc(catN(a.c))}</span></div>
       <h1 id="mdl-t">${esc(a.t)}</h1>
       <p class="lead">${markText(a.l, kp)}</p>
-      <div class="by meta"><span>Por <b>${esc(a.au || 'Redacción Trasfondo')}</b></span>${iClock}${tm(a)}${iChat}${a.n} comentarios</div>
+      <div class="by meta"><span>Por <b>${esc(byl(a))}</b></span>${whenFull(a)}${iChat}${a.n} comentarios</div>
       ${pp.length ? `<div class="txt">${pp.join('')}</div>` : ''}
-      <div class="share">Compartir:<button type="button" data-share>Copiar enlace</button><button type="button" data-share>WhatsApp</button><button type="button" data-share>Facebook</button></div>
+      <div class="share" data-sid="${a.id}">Compartir:<button type="button" data-share="copy">Copiar enlace</button><button type="button" data-share="wa">WhatsApp</button><button type="button" data-share="fb">Facebook</button><button type="button" data-share="x">X</button></div>
       <h2 class="sh">Te puede interesar</h2>
       <div class="row4 mdl-rel">${rel.map(portadaCard).join('')}</div>
     </div>`;
@@ -4545,14 +4656,52 @@ function authLost(){
   if(document.body.classList.contains('is-admin')){ toast('Tu sesión terminó. Vuelve a entrar.'); renderLogin(); }
 }
 let pushing = false, pushAgain = false;
+/* foto de lo que hay en el servidor, para saber qué cambiaste tú */
+function snapState(st){
+  const m = l => { const o = {}; (l || []).forEach(x => o[x.id] = JSON.stringify(x)); return o; };
+  const k = o => { const r = {}; Object.keys(o || {}).forEach(x => r[x] = JSON.stringify(o[x])); return r; };
+  return {arts:m(st.arts), ads:m(st.ads), cfg:k(st.cfg), slots:k(st.slots)};
+}
+/* si otra persona guardó al mismo tiempo, se combinan los cambios en vez de borrarse */
+function mergeRemote(remote){
+  const R = hydrate(JSON.parse(JSON.stringify(remote))), B = SV.base || snapState(R);
+  ['arts', 'ads'].forEach(col => {
+    const mine = S[col] || [], base = B[col] || {};
+    const mineIds = new Set(mine.map(x => x.id));
+    Object.keys(base).forEach(id => { if(!mineIds.has(+id)) R[col] = R[col].filter(x => x.id !== +id); });
+    let top = Math.max(0, ...R[col].map(x => x.id), ...mine.map(x => x.id));
+    mine.forEach(x => {
+      const js = JSON.stringify(x); if(base[x.id] === js) return;
+      const i = R[col].findIndex(y => y.id === x.id);
+      if(!(x.id in base) && i >= 0){ const nx = {...x, id:++top}; if(col === 'arts' && ad.id === x.id) ad.id = nx.id; if(col === 'ads' && ad.aid === x.id) ad.aid = nx.id; R[col].unshift(nx); }
+      else if(i >= 0) R[col][i] = x;
+      else R[col].unshift(x);
+    });
+    if(col === 'arts') R.next = Math.max(R.next || 0, S.next || 0, top + 1);
+    else R.nextAd = Math.max(R.nextAd || 0, S.nextAd || 0, top + 1);
+  });
+  ['cfg', 'slots'].forEach(o => Object.keys(S[o] || {}).forEach(k => { if(JSON.stringify(S[o][k]) !== (B[o] || {})[k]) R[o][k] = S[o][k]; }));
+  R.stats = S.stats; S = R; fixSlots();
+  SV.rev = remote._rev || 0; SV.base = snapState(hydrate(JSON.parse(JSON.stringify(remote))));
+}
 async function pushServer(){
   if(pushing){ pushAgain = true; return; }
   pushing = true; setStatus('saving');
   try{
     const {stats, ...rest} = S;
-    const r = await api('state', {m:'PUT', json:rest});
+    let r = await api('state', {m:'PUT', json:{...rest, _rev:SV.rev || 0}});
     if(r.status === 401){ authLost(); return; }
+    if(r.status === 409){
+      const j = await r.json();
+      mergeRemote(j.state || {});
+      const again = S; const {stats:_s, ...rest2} = again;
+      r = await api('state', {m:'PUT', json:{...rest2, _rev:SV.rev || 0}});
+      if(r.ok && document.body.classList.contains('is-admin')){ renderAdmin(); toast('Otra persona también hizo cambios: se combinaron con los tuyos'); }
+    }
     if(!r.ok) throw new Error('http ' + r.status);
+    const j2 = await r.json().catch(() => ({}));
+    if(j2.rev) SV.rev = j2.rev;
+    SV.base = snapState(S);
     setStatus('srv');
   }catch(e){ setStatus('err', 'No se pudo guardar en el servidor. Revisa tu conexión.'); }
   finally{ pushing = false; if(pushAgain){ pushAgain = false; pushServer(); } }
@@ -4664,7 +4813,7 @@ adBody.addEventListener('submit', e => { if(e.target.id === 'pw-form'){ e.preven
       const j = await r.json();
       if(j && j.ok){
         SV.on = true; SV.empty = !j.state;
-        if(j.state){ const local = S.stats; S = hydrate(j.state); S.stats = Object.assign(S.stats, local); migrate(); fixSlots(); }
+        if(j.state){ const local = S.stats; SV.rev = j.state._rev || 0; S = hydrate(j.state); S.stats = Object.assign(S.stats, local); migrate(); fixSlots(); SV.base = snapState(hydrate(JSON.parse(JSON.stringify(j.state)))); }
       }
     }catch(e){}
   }

@@ -118,6 +118,20 @@ export default async (req, context) => {
       if (r === "sitemap" && !live) return text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>\n', "application/xml");
       return r === "rss" ? text(rss(state, base), "application/rss+xml") : text(sitemap(state, base), "application/xml");
     }
+    /* datos de una nota para la vista previa al compartir (WhatsApp, Facebook, X) */
+    if (r === "og" && m === "GET") {
+      const c = url.searchParams.get("c") || "", s = url.searchParams.get("s") || "";
+      const state = await st.get("state", { type: "json" }), base = baseOf(state, url);
+      const a = (state?.arts || []).find(x => x.c === c && x.slug === s);
+      if (!a) return json({ ok: false }, 404);
+      let img = String(a.img || "");
+      if (!img || /^(idb:|data:)/i.test(img)) img = base + "/og.jpg";
+      else if (img.startsWith("/")) img = base + img;
+      else if (!/^https?:\/\//i.test(img)) img = base + "/og.jpg";
+      const name = String(state?.cfg?.site?.name || "Trasfondo Yucatán").replace(/Tras Fondo/g, "Trasfondo");
+      return new Response(JSON.stringify({ ok: true, t: a.seoT || a.t || "", d: a.seoD || a.l || "", img, alt: a.alt || a.t || "", url: `${base}/${a.c}/${a.slug}`, name, pub: a.pub || "", au: a.au || "" }),
+        { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=60" } });
+    }
     if (r === "state") {
       if (m === "GET") return json({ ok: true, state: (await st.get("state", { type: "json" })) || null });
       if (m === "PUT") {
@@ -126,8 +140,13 @@ export default async (req, context) => {
         const o = JSON.parse(Buffer.from(buf).toString("utf8"));
         if (!o || !Array.isArray(o.arts) || !o.cfg) return json({ error: "Formato no válido" }, 400);
         delete o.stats;
+        /* si otra persona guardó mientras tanto, se avisa para combinar los cambios */
+        const cur = await st.get("state", { type: "json" });
+        const curRev = (cur && cur._rev) || 0;
+        if (o._rev !== undefined && curRev && o._rev !== curRev) return json({ error: "conflicto", state: cur }, 409);
+        o._rev = curRev + 1;
         await st.setJSON("state", o);
-        return json({ ok: true });
+        return json({ ok: true, rev: o._rev });
       }
     }
     if (r === "login" && m === "POST") {
@@ -156,7 +175,7 @@ export default async (req, context) => {
         if (!/^[0-9a-f-]{36}$/.test(id)) return json({ error: "No encontrado" }, 404);
         const f = await st.getWithMetadata("m/" + id, { type: "arrayBuffer" });
         if (!f) return json({ error: "No encontrado" }, 404);
-        return new Response(f.data, { headers: { "Content-Type": f.metadata?.type || "application/octet-stream", "Cache-Control": "public, max-age=31536000, immutable" } });
+        return new Response(f.data, { headers: { "Content-Type": f.metadata?.type || "application/octet-stream", "Cache-Control": "public, max-age=31536000, immutable", "Netlify-CDN-Cache-Control": "public, durable, max-age=31536000, immutable" } });
       }
       if (!(await authed(st, req))) return json({ error: "Sesión no válida" }, 401);
       if (m === "POST") {
