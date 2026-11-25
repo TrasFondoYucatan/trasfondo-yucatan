@@ -4488,19 +4488,22 @@ async function genNote(){
     const pub = f.date ? new Date(f.date + 'T' + new Date().toTimeString().slice(0, 5)).toISOString() : new Date().toISOString();
     const a = blankArt({c:f.c, t:r.t.trim(), l:r.l.trim(), body:r.body.trim(), kw:r.kw, pub, h:'Hace unos minutos', slugAuto:false, genVia:r.via});
     a.seoT = a.t.length > 65 ? trunc(a.t, 65) : ''; a.seoD = a.l.length > 160 ? trunc(a.l, 158) : '';
-    await setCover(a, 0);
+    /* si la portada no se puede subir, la nota se crea igual y se puede reintentar la portada */
+    let coverOk = true;
+    try{ await setCover(a, 0); }catch(err){ coverOk = false; }
     S.arts.unshift(a); S.slots.latest = [a.id, ...S.slots.latest].slice(0, 4);
     fixSlots(); save(); GEN.last = a.id;
     const out = $('#gen-out'); if(out){ out.innerHTML = genCard(a); out.querySelector('.gen-res').animate([{opacity:0, transform:'translateY(16px)'}, {opacity:1, transform:'none'}], {duration:500, easing:'cubic-bezier(.16,1,.3,1)'}); }
     ['gen-q', 'gen-d', 'gen-s'].forEach(id => { const e = $('#' + id); if(e) e.value = ''; });
-    toast('Nota creada con su portada');
-  }catch(e){ toast('No se pudo generar la nota. Intenta de nuevo.'); }
+    toast(coverOk ? 'Nota creada con su portada' : 'Nota creada. La portada no se pudo subir: pulsa "Otra portada" para reintentar.');
+  }catch(e){ console.error(e); toast('No se pudo generar la nota. Intenta de nuevo.'); }
   GEN.busy = false;
   if(btn && btn.isConnected){ btn.disabled = false; btn.textContent = 'Generar nota y portada'; }
 }
 async function regenCover(id){
   const a = byId(+id); if(!a) return;
-  await setCover(a, (a.cv || 0) + 1); save();
+  try{ await setCover(a, (a.cv || 0) + 1); }catch(e){ toast(e.message === 'sesion' ? 'Tu sesión terminó: vuelve a entrar al administrador' : 'No se pudo subir la portada. Intenta de nuevo.'); return; }
+  save();
   const out = $('#gen-out'); if(out) out.innerHTML = genCard(a);
   toast('Portada nueva');
 }
@@ -4705,7 +4708,7 @@ async function aiCall(question, context, mode){
     return r.ok ? {answer:j.answer || ''} : {error:j.error || 'http'};
   }catch(e){ return {error:'red'}; }
 }
-const AI_ERR = {limite:'La IA llegó a su límite gratuito por ahora', clave:'La clave de Gemini no es válida', sin_clave:'La IA no está conectada', tiempo:'La IA tardó demasiado', red:'No hubo conexión con la IA', modelo:'El modelo de IA no respondió'};
+const AI_ERR = {corto:'La IA cortó su respuesta', vacio:'La IA no devolvió texto', limite:'La IA llegó a su límite gratuito por ahora', clave:'La clave de Gemini no es válida', sin_clave:'La IA no está conectada', tiempo:'La IA tardó demasiado', red:'No hubo conexión con la IA', modelo:'El modelo de IA no respondió'};
 function aiStatusHTML(){
   const custom = /^https:\/\//i.test((S.cfg.site.ai || '').trim());
   if(custom) return `<div class="ai-st on" id="ai-status"><b>IA conectada</b><span>Usando tu función propia.</span></div>`;

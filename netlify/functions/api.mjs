@@ -82,27 +82,30 @@ async function gemini(sys, prompt, asJson) {
   const key = GEMINI_KEY(); if (!key) return { error: "sin_clave" };
   let last = "";
   for (const model of MODELS()) {
-    const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 25000);
-    try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-        method: "POST", signal: ctl.signal,
-        headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: sys }] },
-          contents: [{ role: "user", parts: [{ text: prompt }] }],
-          generationConfig: { temperature: asJson ? 0.5 : 0.6, maxOutputTokens: 2048, ...(asJson ? { responseMimeType: "application/json" } : {}) }
-        })
-      });
-      clearTimeout(tm);
-      if (res.status === 404 || res.status === 400) { last = "modelo"; continue; }
-      if (res.status === 429) { last = "limite"; continue; }
-      if (res.status === 401 || res.status === 403) return { error: "clave" };
-      if (!res.ok) { last = "http " + res.status; continue; }
-      const j = await res.json();
-      const out = (j.candidates?.[0]?.content?.parts || []).map(p => p.text || "").join("").trim();
-      if (out) return { answer: out, model };
-      last = "vacio";
-    } catch (e) { clearTimeout(tm); last = e.name === "AbortError" ? "tiempo" : "red"; }
+    /* primero sin "pensar" (más rápido y no corta la respuesta); si el modelo no lo acepta, sin esa opción */
+    for (const think of [true, false]) {
+      const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 50000);
+      try {
+        const gc = { temperature: asJson ? 0.5 : 0.6, maxOutputTokens: 8192, ...(asJson ? { responseMimeType: "application/json" } : {}) };
+        if (think) gc.thinkingConfig = /gemini-3/i.test(model) ? { thinkingLevel: "low" } : { thinkingBudget: 0 };
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+          method: "POST", signal: ctl.signal,
+          headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+          body: JSON.stringify({ systemInstruction: { parts: [{ text: sys }] }, contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: gc })
+        });
+        clearTimeout(tm);
+        if (res.status === 400 && think) { last = "modelo"; continue; }
+        if (res.status === 404 || res.status === 400) { last = "modelo"; break; }
+        if (res.status === 429) { last = "limite"; break; }
+        if (res.status === 401 || res.status === 403) return { error: "clave" };
+        if (!res.ok) { last = "http " + res.status; break; }
+        const j = await res.json(), cand = j.candidates?.[0] || {};
+        const out = (cand.content?.parts || []).filter(p => !p.thought).map(p => p.text || "").join("").trim();
+        if (out && !(asJson && cand.finishReason === "MAX_TOKENS")) return { answer: out, model, cut: cand.finishReason === "MAX_TOKENS" };
+        last = cand.finishReason === "MAX_TOKENS" ? "corto" : "vacio";
+        if (think) continue; else break;
+      } catch (e) { clearTimeout(tm); last = e.name === "AbortError" ? "tiempo" : "red"; break; }
+    }
   }
   return { error: last || "error" };
 }
@@ -219,7 +222,7 @@ export default async (req, context) => {
       const prompt = mode === "nota" ? q : `Contexto del sitio (JSON):\n${JSON.stringify(b.context || {}).slice(0, 20000)}\n\nPregunta del editor: ${q}`;
       const out = await gemini(mode === "nota" ? SYS_NOTA : SYS_CHAT, prompt, mode === "nota");
       if (out.error) return json({ error: out.error }, out.error === "sin_clave" ? 503 : 502);
-      return json({ ok: true, answer: out.answer, model: out.model });
+      return json({ ok: true, answer: out.answer, model: out.model, cut: !!out.cut });
     }
     return json({ error: "Ruta no encontrada" }, 404);
   } catch (e) {
