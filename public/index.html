@@ -1241,6 +1241,13 @@ html.mm-lock{overflow:hidden}
 .szpick b{color:var(--navy);font-size:15px}.szpick small{color:var(--muted);font-size:12px}
 @media (max-width:640px){.szpick{grid-template-columns:1fr}}
 
+/* ===== foto ilustrativa con IA ===== */
+.ai-badge{display:inline-flex;align-items:center;gap:6px;margin:8px 0 4px;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.02em}
+.ai-badge::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--red)}
+.gen-warn{color:#b26b00}
+
+.aipic-sw{display:flex;gap:10px;align-items:flex-start;margin:4px 0 16px;padding:12px 14px;border-radius:10px;background:#f6f7fb;font-size:13.5px;line-height:1.45;color:var(--muted);cursor:pointer}.aipic-sw input{margin-top:3px;width:18px;height:18px;accent-color:var(--red);flex:none}.aipic-sw b{color:var(--navy)}
+
 </style>
 </head>
 <body>
@@ -2106,7 +2113,7 @@ function vArt(id){
   const rel = S.arts.filter(x => x.c === a.c && x.id !== a.id).concat(S.arts.filter(x => x.c !== a.c)).slice(0, 3);
   const media = a.video
     ? `<div class="big vid">${videoEmbed(a.video, a.img ? mediaUrl(a.img) : '')}</div>`
-    : (imgSrc(a,1200,620) ? pic(a,'big','1200','620', 0, a.alt || a.t, true) : '');
+    : (imgSrc(a,1200,620) ? pic(a,'big','1200','620', 0, a.alt || a.t, true) + (a.aiPic ? '<span class="ai-badge">Imagen ilustrativa generada con IA</span>' : '') : '');
   const pp = withInline(renderBody(a.body), adBlock('inline', a.c));
   return `<div class="grid"><article class="art">
     <a class="back rv" ${R()} href="${href(a.c)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>Volver a ${esc(catN(a.c))}</a><br>
@@ -2473,6 +2480,7 @@ function renderEditor(){
       ${mediaBlock({k:'img', title:'Imagen de la nota', pv:'pv-img', accept:'image/*', ph:'o pega el enlace de una imagen (https://…)', hint:'Mejor horizontal y de 1200 px de ancho o más.'})}
       ${mediaBlock({k:'video', title:'Video de la nota (opcional)', pv:'pv-video', accept:'video/*', ph:'o pega un enlace de YouTube, Vimeo o .mp4', hint:'Para videos largos conviene usar YouTube.'})}
     </div>
+    <label class="sw aipic-sw"><input type="checkbox" id="e-aipic" ${a.aiPic ? 'checked' : ''}> <span><b>Esta imagen fue generada con IA</b> (no es una foto real). La nota mostrará debajo: "Imagen ilustrativa generada con IA".</span></label>
     ${fld('Texto alternativo de la imagen', 'data-a="alt"', a.alt || '', {ph:'Describe lo que se ve en la foto', hint:'Lo leen Google Imágenes y los lectores de pantalla. Una frase corta y concreta.'})}
     ${isOp ? `<div class="g2">${mediaBlock({k:'av', sq:1, title:'Foto del autor', pv:'pv-av', accept:'image/*', ph:'o pega el enlace de una foto', hint:'Se muestra en el círculo de la columna de opinión.'})}</div>` : ''}
   </div>
@@ -2682,7 +2690,7 @@ async function handleUpload(k, file){
 function removeMedia(k){
   const old = TG[k].get();
   dropRef(old); TG[k].set('');
-  if(k === 'img') byId(ad.id).k = '';
+  if(k === 'img'){ byId(ad.id).k = ''; byId(ad.id).aiPic = false; }
   if(k === 'av') byId(ad.id).avn = 0;
   save();
   if(ad.sec === 'noticias'){ renderItems(); renderEditor(); } else renderAdmin();
@@ -2760,6 +2768,7 @@ adBody.addEventListener('input', e => {
   else if(t.id === 'ad-q'){ ad.q = t.value; renderItems(); }
 });
 adBody.addEventListener('change', e => {
+  if(e.target.id === 'e-aipic'){ const a = byId(ad.id); if(a){ a.aiPic = e.target.checked; a.mod = new Date().toISOString(); save(); toast(a.aiPic ? 'La nota indicará que la imagen es ilustrativa, generada con IA' : 'Se quitó la leyenda de imagen generada con IA'); } return; }
   if(e.target.id === 'kp-sw'){ S.cfg.site.kp = e.target.checked; save(); toast(S.cfg.site.kp ? 'Las notas resaltarán sus frases importantes' : 'Las notas se verán sin subrayados ni recortes'); return; }
   if(e.target.id === 'live-sw'){
     S.cfg.site.live = e.target.checked; save(); renderAdmin();
@@ -2823,6 +2832,7 @@ $('#admin').addEventListener('click', e => {
   else if(act === 'gen') genNote();
   else if(act.startsWith('gen-idea:')) genIdea(+act.slice(9));
   else if(act.startsWith('gen-img:')) regenCover(act.slice(8));
+  else if(act.startsWith('gen-foto:')) regenFoto(act.slice(9), b);
   else if(act.startsWith('gen-view:')){ const a = byId(+act.slice(9)); if(a) go(artPath(a)); }
   else if(act === 'copy:bgprompt'){ copyText(bgPrompt(byId(ad.id))).then(ok => toast(ok ? 'Instrucción copiada' : 'No se pudo copiar')); }
   else if(act === 'copy:prompt'){ copyText(lovablePrompt()).then(ok => toast(ok ? 'Guía copiada' : 'No se pudo copiar; usa Descargar')); }
@@ -4363,16 +4373,48 @@ function genLocal(f){
   return {t, l, body:P.join('\n\n'), kw};
 }
 function genPrompt(f, st){
+  /* ejemplo real del estilo del medio: inicio de la nota más reciente escrita por el equipo */
+  const ref = S.arts.find(a => a.demo === false && a.genVia !== 'ia' && plainBody(a.body).length > 400);
+  const ej = ref ? plainBody(ref.body).slice(0, 700) : '';
+  const datos = (f.d || '').split(/\n+/).map(x => x.trim()).filter(Boolean);
   return `Redacta una nota periodística para el portal "Trasfondo Yucatán" (Mérida, Yucatán), sección ${catN(f.c)}.
-Estilo de la casa: título claro de unos ${st.t} caracteres, sin clickbait; sumario de una sola frase (unos ${st.l} caracteres); ${st.p + 1} párrafos breves en español de México; el primer párrafo empieza con el lugar en mayúsculas seguido de punto y raya (ejemplo: "MÉRIDA.— "); tono informativo y cercano; puedes marcar con **negritas** uno o dos datos clave; sin subtítulos; el último párrafo termina con la frase "Detrás de cada nota hay un trasfondo."
-Usa SOLO estos datos, sin inventar cifras, nombres, cargos ni declaraciones:
+
+DATOS (usa solo esto; no inventes nada):
 - Qué pasó: ${f.q}
-- Lugar: ${f.l || 'Mérida'}
+- Lugar: ${f.l || 'Mérida'}, Yucatán
 - Fecha: ${f.date || 'hoy'}
 - Fuente: ${f.s || 'no indicada'}
-- Datos clave:
-${(f.d || '').split(/\n+/).filter(Boolean).map(x => '  · ' + x).join('\n') || '  · (sin datos adicionales)'}
-Responde solo con JSON: {"titulo":"…","sumario":"…","texto":"párrafos separados por línea en blanco","palabra_clave":"2 o 3 palabras que la gente buscaría en Google"}`;
+${datos.length ? '- Datos clave:\n' + datos.map(x => '  · ' + x).join('\n') : '- Datos clave: (no hay más datos)'}
+
+CÓMO ESCRIBIRLA:
+1. Título: el hecho principal en una frase clara de 60 a ${Math.max(80, st.t)} caracteres, con sujeto y verbo. Sin clickbait ni signos de exclamación.
+2. Sumario: una sola frase que agregue información nueva, no que repita el título.
+3. Primer párrafo: empieza con "${(f.l || 'Mérida').toUpperCase()}.— " y responde qué pasó, quién, dónde y cuándo.
+4. Párrafos siguientes: los datos clave en orden de importancia, uno o dos por párrafo, cada uno con una idea nueva y bien conectado con el anterior. ${f.s ? 'Atribuye la información a la fuente ("informó ' + f.s + '", "de acuerdo con…").' : ''}
+5. Extensión: de 3 a 6 párrafos según los datos. Si hay pocos datos, mejor una nota corta y clara que una larga y repetitiva.
+6. Puedes poner en **negritas** uno o dos datos clave. Sin subtítulos, sin listas, sin conclusiones de opinión ni frases de relleno.
+${ej ? '\nEjemplo del tono del medio (solo como referencia de estilo, no copies datos):\n"' + ej + '"\n' : ''}
+Responde solo con JSON: {"titulo":"…","sumario":"…","texto":"párrafos separados por una línea en blanco","palabra_clave":"2 o 3 palabras que la gente buscaría en Google"}`;
+}
+/* foto ilustrativa con IA: el servidor la crea y la guarda */
+function imgPrompt(f, t){
+  return `Fotografía periodística realista e ilustrativa, formato horizontal 16:9, para una nota titulada: "${t}". Tema: ${f.q}. Lugar: ${f.l || 'Mérida'}, Yucatán, México (arquitectura, vegetación y luz de la península de Yucatán). Estilo: foto de prensa profesional, luz natural, colores naturales, composición limpia, sin filtros exagerados.
+Reglas obligatorias: sin texto, letreros ni números legibles; sin logotipos ni marcas; no retratar a personas reales ni figuras públicas identificables (si aparecen personas, de espaldas, lejanas o desenfocadas); nada violento, sangriento ni gráfico; nada que parezca una prueba de un hecho real.`;
+}
+const IMG_ERR = {facturacion:'Las fotos con IA requieren activar la facturación en Google AI Studio (cada foto cuesta centavos)', sin_clave:'La IA no está conectada', bloqueada:'Google no quiso crear esa imagen por el tema', limite:'Se alcanzó el límite de imágenes por ahora', tiempo:'La imagen tardó demasiado', modelo:'El modelo de imágenes no está disponible', red:'No hubo conexión con la IA'};
+async function aiImage(f, a){
+  if(!SV.on || !SV.tok) return {error:'sin_clave'};
+  try{
+    const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 70000);
+    const r = await fetch(API + '?r=aiimg', {method:'POST', headers:{'Content-Type':'application/json', Authorization:'Bearer ' + SV.tok}, body:JSON.stringify({prompt:imgPrompt(f, a.t)}), signal:ctl.signal});
+    clearTimeout(tm);
+    if(r.status === 401){ authLost(); return {error:'sesion'}; }
+    const j = await r.json().catch(() => ({}));
+    if(!r.ok || !j.url) return {error:j.error || 'http'};
+    if(a.img && a.img !== j.url) dropRef(a.img);
+    a.img = j.url; a.k = ''; a.aiPic = true; a.alt = 'Imagen ilustrativa generada con IA: ' + a.t; a.mod = new Date().toISOString();
+    return {ok:true};
+  }catch(e){ return {error:e.name === 'AbortError' ? 'tiempo' : 'red'}; }
 }
 async function genText(f){
   const st = houseStyle(), useAI = /^https:\/\//i.test((S.cfg.site.ai || '').trim()) || (SV.on && SV.tok);
@@ -4392,6 +4434,7 @@ async function genText(f){
     } else if(o.error && o.error !== 'off' && o.error !== 'sin_clave') why = AI_ERR[o.error] || 'No hubo conexión con la IA';
   }
   await new Promise(r => setTimeout(r, 500));
+  GEN.why = why || (useAI ? 'La IA no está conectada' : 'Sin IA conectada');
   if(why) toast(why + '; se redactó con la plantilla de estilo');
   return {...genLocal(f), via:'local'};
 }
@@ -4449,7 +4492,7 @@ async function setCover(a, v){
     catch(e){ ref = await blobToData(blob); }
   }
   if(a.img && a.img !== ref) dropRef(a.img);
-  a.img = ref; a.k = ''; a.cv = v || 0; a.alt = 'Portada de la nota: ' + a.t; a.mod = new Date().toISOString();
+  a.img = ref; a.k = ''; a.cv = v || 0; a.aiPic = false; a.alt = 'Portada de la nota: ' + a.t; a.mod = new Date().toISOString();
 }
 
 function tplGen(){
@@ -4467,18 +4510,20 @@ function tplGen(){
       <div class="f"><label for="gen-date">Fecha</label><input class="fi" id="gen-date" type="date" value="${today}"></div>
       <div class="f"><label for="gen-s">Fuente</label><input class="fi" id="gen-s" placeholder="Ejemplo: el Ayuntamiento"></div>
     </div>
+    <div class="f"><label for="gen-pt">Portada</label><select class="fi" id="gen-pt"><option value="diseno" ${GEN.pt !== 'foto' ? 'selected' : ''}>Diseño de Trasfondo con el título</option><option value="foto" ${GEN.pt === 'foto' ? 'selected' : ''}>Foto realista con IA (requiere facturación en Google)</option></select><span class="hint">Para una foto realista gratis: créala en la app de Gemini, súbela en Imagen y video y marca "Esta imagen fue generada con IA".</span></div>
     <div class="dls"><button type="button" class="btn red" id="gen-go" data-act="gen">Generar nota y portada</button></div>
     <div id="gen-out">${GEN.last && byId(GEN.last) ? genCard(byId(GEN.last)) : ''}</div></div>`;
 }
 function genCard(a){
   return `<div class="gen-res"><div class="gen-img">${pic(a, '', 1200, 675, 1, a.alt)}</div><div><span class="pill">${esc(catN(a.c))}</span><h4>${esc(a.t)}</h4><p>${esc(a.l)}</p>
-    <small class="hint">${a.genVia === 'ia' ? 'Redactada por la IA con tus datos.' : 'Redactada con la plantilla de estilo a partir de tus datos.'} Ya está publicada en Últimas noticias; revísala antes de compartirla.</small>
-    <div class="dls"><button type="button" class="btn red" data-edit="${a.id}">Revisar y editar</button><button type="button" class="btn ghost" data-act="gen-img:${a.id}">Otra portada</button><button type="button" class="btn ghost" data-act="gen-view:${a.id}">Ver en el sitio</button></div></div></div>`;
+    <small class="hint">${a.genVia === 'ia' ? 'Redactada por la IA con tus datos.' : `<b class="gen-warn">Redactada con la plantilla, no con la IA${GEN.why ? ' (' + esc(GEN.why) + ')' : ''}.</b>`} ${a.aiPic ? 'Foto ilustrativa creada con IA.' : a.genImgWhy ? `<b class="gen-warn">${esc(a.genImgWhy)}.</b>` : ''} Ya está publicada en Últimas noticias; revísala antes de compartirla.</small>
+    <div class="dls"><button type="button" class="btn red" data-edit="${a.id}">Revisar y editar</button><button type="button" class="btn ghost" data-act="gen-img:${a.id}">Portada de diseño</button><button type="button" class="btn ghost" data-act="gen-foto:${a.id}">${a.aiPic ? 'Otra foto con IA' : 'Foto con IA'}</button><button type="button" class="btn ghost" data-act="gen-view:${a.id}">Ver en el sitio</button></div></div></div>`;
 }
 async function genNote(){
   if(GEN.busy) return;
   const v = id => ($('#' + id) || {}).value || '';
   const f = {q:v('gen-q').trim(), d:v('gen-d'), c:v('gen-c') || 'merida', l:v('gen-l'), date:v('gen-date'), s:v('gen-s')};
+  GEN.pt = v('gen-pt') || 'diseno'; GEN.why = ''; GEN.f = f;
   if(f.q.length < 15){ toast('Escribe qué pasó en una frase (mínimo 15 caracteres)'); const q = $('#gen-q'); if(q) q.focus(); return; }
   GEN.busy = true;
   const btn = $('#gen-go'); if(btn){ btn.disabled = true; btn.textContent = 'Redactando…'; }
@@ -4489,16 +4534,31 @@ async function genNote(){
     const a = blankArt({c:f.c, t:r.t.trim(), l:r.l.trim(), body:r.body.trim(), kw:r.kw, pub, h:'Hace unos minutos', slugAuto:false, genVia:r.via});
     a.seoT = a.t.length > 65 ? trunc(a.t, 65) : ''; a.seoD = a.l.length > 160 ? trunc(a.l, 158) : '';
     /* si la portada no se puede subir, la nota se crea igual y se puede reintentar la portada */
-    let coverOk = true;
-    try{ await setCover(a, 0); }catch(err){ coverOk = false; }
+    let coverOk = true, imgWhy = '';
+    if(GEN.pt === 'foto'){
+      if(btn) btn.textContent = 'Creando foto con IA…';
+      const im = await aiImage(f, a);
+      if(!im.ok){ imgWhy = IMG_ERR[im.error] || 'No se pudo crear la foto con IA'; }
+    }
+    if(!a.aiPic){ try{ await setCover(a, 0); }catch(err){ coverOk = false; } }
+    a.genImgWhy = imgWhy;
     S.arts.unshift(a); S.slots.latest = [a.id, ...S.slots.latest].slice(0, 4);
     fixSlots(); save(); GEN.last = a.id;
     const out = $('#gen-out'); if(out){ out.innerHTML = genCard(a); out.querySelector('.gen-res').animate([{opacity:0, transform:'translateY(16px)'}, {opacity:1, transform:'none'}], {duration:500, easing:'cubic-bezier(.16,1,.3,1)'}); }
     ['gen-q', 'gen-d', 'gen-s'].forEach(id => { const e = $('#' + id); if(e) e.value = ''; });
-    toast(coverOk ? 'Nota creada con su portada' : 'Nota creada. La portada no se pudo subir: pulsa "Otra portada" para reintentar.');
+    toast(!coverOk ? 'Nota creada. La portada no se pudo subir: pulsa "Otra portada" para reintentar.' : imgWhy ? imgWhy + '. Se usó la portada de diseño.' : a.aiPic ? 'Nota creada con foto ilustrativa' : 'Nota creada con su portada');
   }catch(e){ console.error(e); toast('No se pudo generar la nota. Intenta de nuevo.'); }
   GEN.busy = false;
   if(btn && btn.isConnected){ btn.disabled = false; btn.textContent = 'Generar nota y portada'; }
+}
+async function regenFoto(id, b){
+  const a = byId(+id); if(!a) return;
+  if(b){ b.disabled = true; b.textContent = 'Creando foto…'; }
+  const f = GEN.f && GEN.last === a.id ? GEN.f : {q:a.l || a.t, l:'Mérida', c:a.c};
+  const r = await aiImage(f, a);
+  if(r.ok){ a.genImgWhy = ''; save(); toast('Foto ilustrativa lista'); }
+  else { a.genImgWhy = IMG_ERR[r.error] || 'No se pudo crear la foto con IA'; toast(a.genImgWhy); }
+  const out = $('#gen-out'); if(out) out.innerHTML = genCard(a);
 }
 async function regenCover(id){
   const a = byId(+id); if(!a) return;
@@ -4526,7 +4586,7 @@ function mdlHTML(a){
   const kp = mdlKp = S.cfg.site.kp ? keyPhrases(a) : [];
   const pp = withInline(renderBody(a.body, kp), adBlock('inline', a.c));
   const media = a.video ? `<div class="big vid">${videoEmbed(a.video, a.img ? mediaUrl(a.img) : '')}</div>`
-    : (imgSrc(a, 1200, 620) ? pic(a, 'big', '1200', '620', 0, a.alt || a.t, true) : '');
+    : (imgSrc(a, 1200, 620) ? pic(a, 'big', '1200', '620', 0, a.alt || a.t, true) + (a.aiPic ? '<span class="ai-badge">Imagen ilustrativa generada con IA</span>' : '') : '');
   return `<div class="mdl-bar"><button type="button" class="mdl-x" aria-label="Cerrar la nota" data-mclose>${XSVG}</button></div>
     ${media ? `<div class="mdl-hero">${media}</div>` : ''}
     <div class="mdl-body">
