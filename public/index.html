@@ -1257,6 +1257,7 @@ html.mm-lock{overflow:hidden}
 .mm-logo .nlogo{width:124px}
 @media (max-width:760px){.top .nlogo{width:150px}.ad-brand .nlogo{width:96px}}
 
+.loc span{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -1451,7 +1452,7 @@ function upgradeState(st){
   const walk = o => { for(const k in o){ if(o[k] && typeof o[k] === 'object') walk(o[k]); else o[k] = fix(o[k]); } };
   walk(c);
   st.arts.forEach(a => ['t', 'l', 'body', 'seoT', 'seoD', 'au', 'alt'].forEach(k => { if(typeof a[k] === 'string') a[k] = fix(a[k]); }));
-  if(c.date === 'Lunes, 27 de enero de 2025') c.date = '';
+  c.date = '';   /* la fecha siempre es automática (hora de Mérida) */
   if(c.foot2 === '© 2025 Todos los derechos reservados') c.foot2 = '© ' + new Date().getFullYear() + ' Todos los derechos reservados';
   /* banner de SOWP en la barra lateral (una sola vez; si luego lo borran, no regresa) */
   if(!c.site.sowpAd && Array.isArray(st.ads)){
@@ -1742,7 +1743,7 @@ async function liveWx(){
 setInterval(() => {
   liveWx();
 }, 20 * 60000);
-setInterval(() => { const f = $('#fecha'); if(f && S && !S.cfg.date.trim()) f.textContent = todayStr(); }, 60000);
+setInterval(() => { const f = $('#fecha'); if(f) f.textContent = todayStr(); }, 60000);
 
 function applyChrome(){
   const c = S.cfg;
@@ -1751,7 +1752,7 @@ function applyChrome(){
   const lw = c.site.wxAuto && WXL ? WXL : null;
   $('#t-temp').textContent = lw ? lw.temp : c.temp;
   $('#t-wx').textContent = lw ? lw.wx : c.wx;
-  $('#fecha').textContent = c.date.trim() || todayStr();
+  $('#fecha').textContent = todayStr();
   $('#tabs').innerHTML = ORDER.map(k => `<a href="${href(k)}" data-k="${k}">${esc(catN(k))}</a>`).join('');
   const ml = $('#mm-list');
   if(ml) ml.innerHTML = `<a href="${href('')}" data-k="" style="--i:0"><span>Inicio</span></a>` + ORDER.map((k, i) => `<a href="${href(k)}" data-k="${k}" style="--i:${i + 1}"><span>${esc(catN(k))}</span></a>`).join('');
@@ -2630,7 +2631,7 @@ function tplTextos(){
   const c = S.cfg;
   return `<div class="ac" data-tour="texts"><h3>Cabecera</h3><p class="sub">Lo que aparece arriba, junto al logotipo.</p>
       ${fld('Lema', 'data-cfg="tag"', c.tag, {area:1, hint:'Puedes usar dos líneas.'})}
-      <div class="g2">${fld('Ciudad', 'data-cfg="city"', c.city)}${fld('Fecha', 'data-cfg="date"', c.date, {hint:'Déjala vacía para mostrar siempre la fecha de hoy.'})}</div>
+      ${fld('Ciudad', 'data-cfg="city"', c.city, {hint:'La fecha se pone sola todos los días con la hora de Mérida.'})}
       <div class="g2">${fld('Temperatura', 'data-cfg="temp"', c.temp)}${fld('Clima', 'data-cfg="wx"', c.wx)}</div>
       <label class="sw"><input type="checkbox" id="wx-sw" ${c.site.wxAuto ? 'checked' : ''}> Clima automático en tiempo real (temperatura y cielo de Mérida, se actualiza cada 20 minutos). Si lo apagas, se muestran la temperatura y el clima que escribas arriba.</label></div>
     <div class="ac"><h3>Nombres del menú</h3><p class="sub">Se actualizan en el menú, en las etiquetas rojas y en los títulos de cada sección.</p>
