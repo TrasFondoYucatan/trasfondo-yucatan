@@ -1511,6 +1511,7 @@ const blankArt = o => {
   return a;
 };
 function migrate(){
+  if(S.cfg && S.cfg.site) S.cfg.site.ai = '';   /* la opción de IA propia se retiró: siempre se usa Gemini */
   const used = new Set();
   S.arts.forEach(a => {
     if(!a.slug) a.slug = slugify(a.t) || 'nota-' + a.id;
@@ -3569,7 +3570,6 @@ function aiContext(){
 function tplAI(){
   if(!ad.chat.length) ad.chat.push({r:'a', h:aiGreeting()});
   if(SV.on && SV.tok && !SV.ai) setTimeout(() => aiStatus(), 0);
-  const ep = S.cfg.site.ai || '';
   return tplGen() + `<div class="ac ai" data-tour="ai"><div class="ai-h"><div><h3>Asistente de contenido y publicidad</h3><p class="sub">Responde con tus estadísticas: lecturas, clics, tiempo de lectura, SEO y rendimiento de los banners.</p></div><span class="badge">Asistente integrado</span></div>
     <div class="ai-pick"><div class="f"><label for="ai-prod">Tipo de anunciante</label><select id="ai-prod" class="fi">${Object.entries(PROD).map(([k, p]) => `<option value="${k}">${esc(p.n)}</option>`).join('')}</select></div><button type="button" class="btn red" data-act="ai-banner">¿Dónde pongo su banner?</button></div>
     <div class="chips"><button type="button" class="chip" data-ask="¿Qué notas debo publicar esta semana?">Qué publicar esta semana</button><button type="button" class="chip" data-ask="¿Qué notas se leen más tiempo?">Qué notas retienen más</button><button type="button" class="chip" data-ask="¿Qué notas tienen más clics?">Qué notas tienen más clics</button><button type="button" class="chip" data-ask="¿Cómo mejoro mi SEO?">Cómo mejoro mi SEO</button><button type="button" class="chip" data-ask="¿Cómo van mis banners?">Cómo van mis banners</button></div>
@@ -3577,9 +3577,7 @@ function tplAI(){
     <form class="ai-in" id="ai-form"><input class="fi" id="ai-q" placeholder="Escribe tu pregunta…" autocomplete="off" aria-label="Pregunta para el asistente"><button type="submit" class="btn red">Enviar</button></form>
     <p class="hint" style="margin-top:10px">Los botones de arriba usan las reglas integradas con tus estadísticas. Las preguntas escritas usan la IA cuando está conectada.</p>
     ${aiStatusHTML()}
-    <details class="ai-conn"><summary>Avanzado: usar otra IA</summary>
-      <p class="hint" style="margin-top:8px">Solo si quieres usar una función de servidor propia en lugar de Gemini. Recibirá un POST con { question, context, mode } y debe responder { "answer": "texto" }. Déjalo vacío para usar Gemini.</p>
-      ${fld('Dirección de tu función', 'data-cfg="site.ai"', ep, {ph:'https://…/ai-assistant'})}</details></div>`;
+  </div>`;
 }
 function aiGreeting(){
   const rows = artRows(), top = [...rows].sort((a, b) => b.v - a.v)[0], ins = insights();
@@ -3599,7 +3597,7 @@ async function ask(q, forced, local){
   const msg = {r:'a', h:'<span class="typing"><i></i><i></i><i></i></span>'};
   ad.chat.push(msg); renderChat();
   let html = '';
-  const useAI = !forced && !local && (/^https:\/\//i.test((S.cfg.site.ai || '').trim()) || (SV.on && SV.tok && SV.ai && SV.ai.ready));
+  const useAI = !forced && !local && (/^https:\/\//i.test(''.trim()) || (SV.on && SV.tok && SV.ai && SV.ai.ready));
   if(useAI){
     const o = await aiCall(q, aiContext(), 'chat');
     if(o.answer){ const tx = String(o.answer).replace(/^#+\s*/gm, ''); html = renderBody(tx).join('') + '<p class="ai-via">Respuesta de la IA con tus estadísticas</p>'; }
@@ -4456,7 +4454,7 @@ async function aiImage(f, a){
   }catch(e){ return {error:e.name === 'AbortError' ? 'tiempo' : 'red'}; }
 }
 async function genText(f){
-  const st = houseStyle(), useAI = /^https:\/\//i.test((S.cfg.site.ai || '').trim()) || (SV.on && SV.tok);
+  const st = houseStyle(), useAI = /^https:\/\//i.test(''.trim()) || (SV.on && SV.tok);
   let why = '';
   if(useAI){
     const o = await aiCall(genPrompt(f, st), {tipo:'redactar_nota', estilo:st, datos:f}, 'nota');
@@ -4793,7 +4791,7 @@ async function aiStatus(force){
 }
 /* llama a la IA: función propia (avanzado) o la integrada. Devuelve {answer} o {error} */
 async function aiCall(question, context, mode){
-  const ep = (S.cfg.site.ai || '').trim();
+  const ep = ''.trim();
   try{
     if(/^https:\/\//i.test(ep)){
       const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 30000);
@@ -4814,7 +4812,7 @@ async function aiCall(question, context, mode){
 }
 const AI_ERR = {corto:'La IA cortó su respuesta', vacio:'La IA no devolvió texto', limite:'La IA llegó a su límite gratuito por ahora', clave:'La clave de Gemini no es válida', sin_clave:'La IA no está conectada', tiempo:'La IA tardó demasiado', red:'No hubo conexión con la IA', modelo:'El modelo de IA no respondió'};
 function aiStatusHTML(){
-  const custom = /^https:\/\//i.test((S.cfg.site.ai || '').trim());
+  const custom = /^https:\/\//i.test(''.trim());
   if(custom) return `<div class="ai-st on" id="ai-status"><b>IA conectada</b><span>Usando tu función propia.</span></div>`;
   if(!SV.on) return `<div class="ai-st" id="ai-status"><b>IA disponible al publicar en Netlify</b><span>Aquí funciona el asistente con reglas propias.</span></div>`;
   if(!SV.ai) return `<div class="ai-st" id="ai-status"><b>Revisando la IA…</b></div>`;
